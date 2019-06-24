@@ -20,6 +20,7 @@ import org.openhab.binding.astro.internal.model.Position;
 import org.openhab.binding.astro.internal.model.Radiation;
 import org.openhab.binding.astro.internal.model.Range;
 import org.openhab.binding.astro.internal.model.Sun;
+import org.openhab.binding.astro.internal.model.SunDailyEvents;
 import org.openhab.binding.astro.internal.model.SunEclipse;
 import org.openhab.binding.astro.internal.model.SunPhaseName;
 import org.openhab.binding.astro.internal.util.DateTimeUtils;
@@ -31,31 +32,12 @@ import org.openhab.binding.astro.internal.util.DateTimeUtils;
  * @author Christoph Weitkamp - Introduced UoM
  * @see based on the calculations of http://www.suncalc.net
  */
-public class SunCalc {
+public class SunCalc extends AbstractSunCalc {
     private static final double J2000 = 2451545.0;
     private static final double SC = 1367; // Solar constant in W/m²
     public static final double DEG2RAD = Math.PI / 180;
     public static final double RAD2DEG = 180. / Math.PI;
 
-    private static final double M0 = 357.5291 * DEG2RAD;
-    private static final double M1 = 0.98560028 * DEG2RAD;
-    private static final double J0 = 0.0009;
-    private static final double J1 = 0.0053;
-    private static final double J2 = -0.0069;
-    private static final double C1 = 1.9148 * DEG2RAD;
-    private static final double C2 = 0.0200 * DEG2RAD;
-    private static final double C3 = 0.0003 * DEG2RAD;
-    private static final double P = 102.9372 * DEG2RAD;
-    private static final double E = 23.45 * DEG2RAD;
-    private static final double TH0 = 280.1600 * DEG2RAD;
-    private static final double TH1 = 360.9856235 * DEG2RAD;
-    private static final double SUN_ANGLE = -0.83;
-    private static final double SUN_DIAMETER = 0.53 * DEG2RAD; // sun diameter
-    private static final double H0 = SUN_ANGLE * DEG2RAD;
-    private static final double H1 = -6.0 * DEG2RAD; // nautical twilight angle
-    private static final double H2 = -12.0 * DEG2RAD; // astronomical twilight
-                                                      // angle
-    private static final double H3 = -18.0 * DEG2RAD; // darkness angle
     private static final double MINUTES_PER_DAY = 60 * 24;
     private static final int CURVE_TIME_INTERVAL = 20; // 20 minutes
     private static final double JD_ONE_MINUTE_FRACTION = 1.0 / 60 / 24;
@@ -140,32 +122,20 @@ public class SunCalc {
     }
 
     private Sun getSunInfo(Calendar calendar, double latitude, double longitude, Double altitude, boolean onlyAstro) {
-        double lw = -longitude * DEG2RAD;
-        double phi = latitude * DEG2RAD;
-        double j = DateTimeUtils.midnightDateToJulianDate(calendar) + 0.5;
-        double n = getJulianCycle(j, lw);
-        double js = getApproxSolarTransit(0, lw, n);
-        double m = getSolarMeanAnomaly(js);
-        double c = getEquationOfCenter(m);
-        double lsun = getEclipticLongitude(m, c);
-        double d = getSunDeclination(lsun);
-        double jtransit = getSolarTransit(js, m, lsun);
-        double w0 = getHourAngle(H0, phi, d);
-        double w1 = getHourAngle(H0 + SUN_DIAMETER, phi, d);
-        double jset = getSunsetJulianDate(w0, m, lsun, lw, n);
-        double jsetstart = getSunsetJulianDate(w1, m, lsun, lw, n);
-        double jrise = getSunriseJulianDate(jtransit, jset);
-        double jriseend = getSunriseJulianDate(jtransit, jsetstart);
-        double w2 = getHourAngle(H1, phi, d);
-        double jnau = getSunsetJulianDate(w2, m, lsun, lw, n);
-        double jciv2 = getSunriseJulianDate(jtransit, jnau);
+        SunDailyEventsCalc sunDailyEventsCalc = new SunDailyEventsCalc();
+        SunDailyEvents sunDailyEvents = sunDailyEventsCalc.calculate(calendar, latitude, longitude, altitude);
 
-        double w3 = getHourAngle(H2, phi, d);
-        double w4 = getHourAngle(H3, phi, d);
-        double jastro = getSunsetJulianDate(w3, m, lsun, lw, n);
-        double jdark = getSunsetJulianDate(w4, m, lsun, lw, n);
-        double jnau2 = getSunriseJulianDate(jtransit, jastro);
-        double jastro2 = getSunriseJulianDate(jtransit, jdark);
+        double jastro2 = sunDailyEvents.jastro2;
+        double jnau2 = sunDailyEvents.jnau2;
+        double jastro = sunDailyEvents.jastro;
+        double jdark = sunDailyEvents.jdark;
+        double jtransit = sunDailyEvents.jtransit;
+        double jrise = sunDailyEvents.jrise;
+        double jriseend = sunDailyEvents.jriseend;
+        double jsetstart = sunDailyEvents.jsetstart;
+        double jset = sunDailyEvents.jset;
+        double jciv2 = sunDailyEvents.jciv2;
+        double jnau = sunDailyEvents.jnau;
 
         Sun sun = new Sun();
         sun.setAstroDawn(new Range(DateTimeUtils.toCalendar(jastro2), DateTimeUtils.toCalendar(jnau2)));
@@ -234,7 +204,8 @@ public class SunCalc {
         // eclipse
         SunEclipse eclipse = sun.getEclipse();
         MoonCalc mc = new MoonCalc();
-
+        double j = DateTimeUtils.midnightDateToJulianDate(calendar) + 0.5;
+        
         double partial = mc.getEclipse(calendar, MoonCalc.ECLIPSE_TYPE_SUN, j, MoonCalc.ECLIPSE_MODE_PARTIAL);
         eclipse.setPartial(DateTimeUtils.toCalendar(partial));
         double ring = mc.getEclipse(calendar, MoonCalc.ECLIPSE_TYPE_SUN, j, MoonCalc.ECLIPSE_MODE_RING);
@@ -270,68 +241,5 @@ public class SunCalc {
         Calendar cal = (Calendar) calendar.clone();
         cal.add(Calendar.DAY_OF_MONTH, days);
         return cal;
-    }
-
-    // all the following methods are translated to java based on the javascript
-    // calculations of http://www.suncalc.net
-    private double getJulianCycle(double j, double lw) {
-        return Math.round(j - J2000 - J0 - lw / (2 * Math.PI));
-    }
-
-    private double getApproxSolarTransit(double ht, double lw, double n) {
-        return J2000 + J0 + (ht + lw) / (2 * Math.PI) + n;
-    }
-
-    private double getSolarMeanAnomaly(double js) {
-        return M0 + M1 * (js - J2000);
-    }
-
-    private double getEquationOfCenter(double m) {
-        return C1 * Math.sin(m) + C2 * Math.sin(2 * m) + C3 * Math.sin(3 * m);
-    }
-
-    private double getEclipticLongitude(double m, double c) {
-        return m + P + c + Math.PI;
-    }
-
-    private double getSolarTransit(double js, double m, double lsun) {
-        return js + (J1 * Math.sin(m)) + (J2 * Math.sin(2 * lsun));
-    }
-
-    private double getSunDeclination(double lsun) {
-        return Math.asin(Math.sin(lsun) * Math.sin(E));
-    }
-
-    private double getRightAscension(double lsun) {
-        return Math.atan2(Math.sin(lsun) * Math.cos(E), Math.cos(lsun));
-    }
-
-    private double getSiderealTime(double j, double lw) {
-        return TH0 + TH1 * (j - J2000) - lw;
-    }
-
-    private double getAzimuth(double th, double a, double phi, double d) {
-        double h = th - a;
-        return Math.atan2(Math.sin(h), Math.cos(h) * Math.sin(phi) - Math.tan(d) * Math.cos(phi));
-    }
-
-    private double getElevation(double th, double a, double phi, double d) {
-        return Math.asin(Math.sin(phi) * Math.sin(d) + Math.cos(phi) * Math.cos(d) * Math.cos(th - a));
-    }
-
-    private double getShadeLength(double elevation) {
-        return 1 / Math.tan(elevation * DEG2RAD);
-    }
-
-    private double getHourAngle(double h, double phi, double d) {
-        return Math.acos((Math.sin(h) - Math.sin(phi) * Math.sin(d)) / (Math.cos(phi) * Math.cos(d)));
-    }
-
-    private double getSunsetJulianDate(double w0, double m, double Lsun, double lw, double n) {
-        return getSolarTransit(getApproxSolarTransit(w0, lw, n), m, Lsun);
-    }
-
-    private double getSunriseJulianDate(double jtransit, double jset) {
-        return jtransit - (jset - jtransit);
     }
 }
