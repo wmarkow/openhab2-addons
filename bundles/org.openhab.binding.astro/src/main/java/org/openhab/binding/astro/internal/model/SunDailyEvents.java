@@ -19,15 +19,25 @@ package org.openhab.binding.astro.internal.model;
  *
  */
 public class SunDailyEvents {
-    public double jtransit;
-    public double jset;
-    public double jsetstart;
-    public double jrise;
-    public double jriseend;
-    public double jnau;
-    public double jciv2;
-    public double jastro;
-    public double jdark;
-    public double jnau2;
-    public double jastro2;
+    public double transit;
+
+    public double setStart;
+    
+    /***
+     * Moment when the upper limb of the Sun disappears below the horizon
+     */
+    public double setEnd;
+
+    /***
+     * Moment when the upper limb of the Sun appears on the horizon in the morning.
+     */
+    public double riseStart;
+    public double riseEnd;
+
+    public double nauticDuskStart;
+    public double civilDawnStart;
+    public double astroDuskStart;
+    public double nightStart;
+    public double nauticDawnStart;
+    public double astroDawnStart;
 }

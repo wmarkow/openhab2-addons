@@ -41,36 +41,36 @@ class SunDailyEventsCalc extends AbstractSunCalc {
         double c = getEquationOfCenter(m);
         double lsun = getEclipticLongitude(m, c);
         double d = getSunDeclination(lsun);
-        double jtransit = getSolarTransit(js, m, lsun);
+        double transit = getSolarTransit(js, m, lsun);
         double w0 = getHourAngle(H0, phi, d);
         double w1 = getHourAngle(H0 + SUN_DIAMETER, phi, d);
-        double jset = getSunsetJulianDate(w0, m, lsun, lw, n);
-        double jsetstart = getSunsetJulianDate(w1, m, lsun, lw, n);
-        double jrise = getSunriseJulianDate(jtransit, jset);
-        double jriseend = getSunriseJulianDate(jtransit, jsetstart);
+        double setEnd = getSunsetJulianDate(w0, m, lsun, lw, n);
+        double setStart = getSunsetJulianDate(w1, m, lsun, lw, n);
+        double riseStart = getSunriseJulianDate(transit, setEnd);
+        double riseEnd = getSunriseJulianDate(transit, setStart);
         double w2 = getHourAngle(H1, phi, d);
-        double jnau = getSunsetJulianDate(w2, m, lsun, lw, n);
-        double jciv2 = getSunriseJulianDate(jtransit, jnau);
+        double nauticDuskStart = getSunsetJulianDate(w2, m, lsun, lw, n);
+        double civilDawnStart = getSunriseJulianDate(transit, nauticDuskStart);
 
         double w3 = getHourAngle(H2, phi, d);
         double w4 = getHourAngle(H3, phi, d);
-        double jastro = getSunsetJulianDate(w3, m, lsun, lw, n);
-        double jdark = getSunsetJulianDate(w4, m, lsun, lw, n);
-        double jnau2 = getSunriseJulianDate(jtransit, jastro);
-        double jastro2 = getSunriseJulianDate(jtransit, jdark);
+        double astroDuskStart = getSunsetJulianDate(w3, m, lsun, lw, n);
+        double nightStart = getSunsetJulianDate(w4, m, lsun, lw, n);
+        double nauticDawnStart = getSunriseJulianDate(transit, astroDuskStart);
+        double astroDawnStart = getSunriseJulianDate(transit, nightStart);
 
         SunDailyEvents result = new SunDailyEvents();
-        result.jtransit = jtransit;
-        result.jset = jset;
-        result.jsetstart = jsetstart;
-        result.jrise = jrise;
-        result.jriseend = jriseend;
-        result.jnau = jnau;
-        result.jciv2 = jciv2;
-        result.jastro = jastro;
-        result.jdark = jdark;
-        result.jnau2 = jnau2;
-        result.jastro2 = jastro2;
+        result.transit = transit;
+        result.setEnd = setEnd;
+        result.setStart = setStart;
+        result.riseStart = riseStart;
+        result.riseEnd = riseEnd;
+        result.nauticDuskStart = nauticDuskStart;
+        result.civilDawnStart = civilDawnStart;
+        result.astroDuskStart = astroDuskStart;
+        result.nightStart = nightStart;
+        result.nauticDawnStart = nauticDawnStart;
+        result.astroDawnStart = astroDawnStart;
 
         return result;
     }

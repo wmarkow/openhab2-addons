@@ -125,36 +125,36 @@ public class SunCalc extends AbstractSunCalc {
         SunDailyEventsCalc sunDailyEventsCalc = new SunDailyEventsCalc();
         SunDailyEvents sunDailyEvents = sunDailyEventsCalc.calculate(calendar, latitude, longitude, altitude);
 
-        double jastro2 = sunDailyEvents.jastro2;
-        double jnau2 = sunDailyEvents.jnau2;
-        double jastro = sunDailyEvents.jastro;
-        double jdark = sunDailyEvents.jdark;
-        double jtransit = sunDailyEvents.jtransit;
-        double jrise = sunDailyEvents.jrise;
-        double jriseend = sunDailyEvents.jriseend;
-        double jsetstart = sunDailyEvents.jsetstart;
-        double jset = sunDailyEvents.jset;
-        double jciv2 = sunDailyEvents.jciv2;
-        double jnau = sunDailyEvents.jnau;
+        double astroDawnStart = sunDailyEvents.astroDawnStart;
+        double nauticDawnStart = sunDailyEvents.nauticDawnStart;
+        double astroDuskStart = sunDailyEvents.astroDuskStart;
+        double nightStart = sunDailyEvents.nightStart;
+        double transit = sunDailyEvents.transit;
+        double riseStart = sunDailyEvents.riseStart;
+        double riseEnd = sunDailyEvents.riseEnd;
+        double setStart = sunDailyEvents.setStart;
+        double setEnd = sunDailyEvents.setEnd;
+        double civilDawnStart = sunDailyEvents.civilDawnStart;
+        double nauticDuskStart = sunDailyEvents.nauticDuskStart;
 
         Sun sun = new Sun();
-        sun.setAstroDawn(new Range(DateTimeUtils.toCalendar(jastro2), DateTimeUtils.toCalendar(jnau2)));
-        sun.setAstroDusk(new Range(DateTimeUtils.toCalendar(jastro), DateTimeUtils.toCalendar(jdark)));
+        sun.setAstroDawn(new Range(DateTimeUtils.toCalendar(astroDawnStart), DateTimeUtils.toCalendar(nauticDawnStart)));
+        sun.setAstroDusk(new Range(DateTimeUtils.toCalendar(astroDuskStart), DateTimeUtils.toCalendar(nightStart)));
 
         if (onlyAstro) {
             return sun;
         }
 
-        sun.setNoon(new Range(DateTimeUtils.toCalendar(jtransit),
-                DateTimeUtils.toCalendar(jtransit + JD_ONE_MINUTE_FRACTION)));
-        sun.setRise(new Range(DateTimeUtils.toCalendar(jrise), DateTimeUtils.toCalendar(jriseend)));
-        sun.setSet(new Range(DateTimeUtils.toCalendar(jsetstart), DateTimeUtils.toCalendar(jset)));
+        sun.setNoon(new Range(DateTimeUtils.toCalendar(transit),
+                DateTimeUtils.toCalendar(transit + JD_ONE_MINUTE_FRACTION)));
+        sun.setRise(new Range(DateTimeUtils.toCalendar(riseStart), DateTimeUtils.toCalendar(riseEnd)));
+        sun.setSet(new Range(DateTimeUtils.toCalendar(setStart), DateTimeUtils.toCalendar(setEnd)));
 
-        sun.setCivilDawn(new Range(DateTimeUtils.toCalendar(jciv2), DateTimeUtils.toCalendar(jrise)));
-        sun.setCivilDusk(new Range(DateTimeUtils.toCalendar(jset), DateTimeUtils.toCalendar(jnau)));
+        sun.setCivilDawn(new Range(DateTimeUtils.toCalendar(civilDawnStart), DateTimeUtils.toCalendar(riseStart)));
+        sun.setCivilDusk(new Range(DateTimeUtils.toCalendar(setEnd), DateTimeUtils.toCalendar(nauticDuskStart)));
 
-        sun.setNauticDawn(new Range(DateTimeUtils.toCalendar(jnau2), DateTimeUtils.toCalendar(jciv2)));
-        sun.setNauticDusk(new Range(DateTimeUtils.toCalendar(jnau), DateTimeUtils.toCalendar(jastro)));
+        sun.setNauticDawn(new Range(DateTimeUtils.toCalendar(nauticDawnStart), DateTimeUtils.toCalendar(civilDawnStart)));
+        sun.setNauticDusk(new Range(DateTimeUtils.toCalendar(nauticDuskStart), DateTimeUtils.toCalendar(astroDuskStart)));
 
         boolean isSunUpAllDay = isSunUpAllDay(calendar, latitude, longitude, altitude);
 
@@ -205,7 +205,7 @@ public class SunCalc extends AbstractSunCalc {
         SunEclipse eclipse = sun.getEclipse();
         MoonCalc mc = new MoonCalc();
         double j = DateTimeUtils.midnightDateToJulianDate(calendar) + 0.5;
-        
+
         double partial = mc.getEclipse(calendar, MoonCalc.ECLIPSE_TYPE_SUN, j, MoonCalc.ECLIPSE_MODE_PARTIAL);
         eclipse.setPartial(DateTimeUtils.toCalendar(partial));
         double ring = mc.getEclipse(calendar, MoonCalc.ECLIPSE_TYPE_SUN, j, MoonCalc.ECLIPSE_MODE_RING);
