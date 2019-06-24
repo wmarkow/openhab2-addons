@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.astro.internal.model;
 
+import java.util.Calendar;
+
 /***
  * A set of Sun dayly events, like rise, set, transit, dawn, dusk, etc.
  * 
@@ -19,25 +21,25 @@ package org.openhab.binding.astro.internal.model;
  *
  */
 public class SunDailyEvents {
-    public double transit;
+    public Calendar transit;
 
-    public double setStart;
+    public Calendar setStart;
     
     /***
      * Moment when the upper limb of the Sun disappears below the horizon
      */
-    public double setEnd;
+    public Calendar setEnd;
 
     /***
      * Moment when the upper limb of the Sun appears on the horizon in the morning.
      */
-    public double riseStart;
-    public double riseEnd;
+    public Calendar riseStart;
+    public Calendar riseEnd;
 
-    public double nauticDuskStart;
-    public double civilDawnStart;
-    public double astroDuskStart;
-    public double nightStart;
-    public double nauticDawnStart;
-    public double astroDawnStart;
+    public Calendar nauticDuskStart;
+    public Calendar civilDawnStart;
+    public Calendar astroDuskStart;
+    public Calendar nightStart;
+    public Calendar nauticDawnStart;
+    public Calendar astroDawnStart;
 }

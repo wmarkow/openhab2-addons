@@ -125,36 +125,37 @@ public class SunCalc extends AbstractSunCalc {
         SunDailyEventsCalc sunDailyEventsCalc = new SunDailyEventsCalc();
         SunDailyEvents sunDailyEvents = sunDailyEventsCalc.calculate(calendar, latitude, longitude, altitude);
 
-        double astroDawnStart = sunDailyEvents.astroDawnStart;
-        double nauticDawnStart = sunDailyEvents.nauticDawnStart;
-        double astroDuskStart = sunDailyEvents.astroDuskStart;
-        double nightStart = sunDailyEvents.nightStart;
-        double transit = sunDailyEvents.transit;
-        double riseStart = sunDailyEvents.riseStart;
-        double riseEnd = sunDailyEvents.riseEnd;
-        double setStart = sunDailyEvents.setStart;
-        double setEnd = sunDailyEvents.setEnd;
-        double civilDawnStart = sunDailyEvents.civilDawnStart;
-        double nauticDuskStart = sunDailyEvents.nauticDuskStart;
+        Calendar astroDawnStart = sunDailyEvents.astroDawnStart;
+        Calendar nauticDawnStart = sunDailyEvents.nauticDawnStart;
+        Calendar astroDuskStart = sunDailyEvents.astroDuskStart;
+        Calendar nightStart = sunDailyEvents.nightStart;
+        Calendar transit = sunDailyEvents.transit;
+        Calendar riseStart = sunDailyEvents.riseStart;
+        Calendar riseEnd = sunDailyEvents.riseEnd;
+        Calendar setStart = sunDailyEvents.setStart;
+        Calendar setEnd = sunDailyEvents.setEnd;
+        Calendar civilDawnStart = sunDailyEvents.civilDawnStart;
+        Calendar nauticDuskStart = sunDailyEvents.nauticDuskStart;
 
         Sun sun = new Sun();
-        sun.setAstroDawn(new Range(DateTimeUtils.toCalendar(astroDawnStart), DateTimeUtils.toCalendar(nauticDawnStart)));
-        sun.setAstroDusk(new Range(DateTimeUtils.toCalendar(astroDuskStart), DateTimeUtils.toCalendar(nightStart)));
+        sun.setAstroDawn(new Range(astroDawnStart, nauticDawnStart));
+        sun.setAstroDusk(new Range(astroDuskStart, nightStart));
 
         if (onlyAstro) {
             return sun;
         }
+        
+        final Calendar transitEnd = ((Calendar)transit.clone());
+        transitEnd.add(Calendar.MINUTE, 1);
+        sun.setNoon(new Range(transit, transitEnd));
+        sun.setRise(new Range(riseStart, riseEnd));
+        sun.setSet(new Range(setStart, setEnd));
 
-        sun.setNoon(new Range(DateTimeUtils.toCalendar(transit),
-                DateTimeUtils.toCalendar(transit + JD_ONE_MINUTE_FRACTION)));
-        sun.setRise(new Range(DateTimeUtils.toCalendar(riseStart), DateTimeUtils.toCalendar(riseEnd)));
-        sun.setSet(new Range(DateTimeUtils.toCalendar(setStart), DateTimeUtils.toCalendar(setEnd)));
+        sun.setCivilDawn(new Range(civilDawnStart, riseStart));
+        sun.setCivilDusk(new Range(setEnd, nauticDuskStart));
 
-        sun.setCivilDawn(new Range(DateTimeUtils.toCalendar(civilDawnStart), DateTimeUtils.toCalendar(riseStart)));
-        sun.setCivilDusk(new Range(DateTimeUtils.toCalendar(setEnd), DateTimeUtils.toCalendar(nauticDuskStart)));
-
-        sun.setNauticDawn(new Range(DateTimeUtils.toCalendar(nauticDawnStart), DateTimeUtils.toCalendar(civilDawnStart)));
-        sun.setNauticDusk(new Range(DateTimeUtils.toCalendar(nauticDuskStart), DateTimeUtils.toCalendar(astroDuskStart)));
+        sun.setNauticDawn(new Range(nauticDawnStart, civilDawnStart));
+        sun.setNauticDusk(new Range(nauticDuskStart, astroDuskStart));
 
         boolean isSunUpAllDay = isSunUpAllDay(calendar, latitude, longitude, altitude);
 

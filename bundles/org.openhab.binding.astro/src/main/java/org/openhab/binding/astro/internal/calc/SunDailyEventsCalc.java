@@ -60,17 +60,17 @@ class SunDailyEventsCalc extends AbstractSunCalc {
         double astroDawnStart = getSunriseJulianDate(transit, nightStart);
 
         SunDailyEvents result = new SunDailyEvents();
-        result.transit = transit;
-        result.setEnd = setEnd;
-        result.setStart = setStart;
-        result.riseStart = riseStart;
-        result.riseEnd = riseEnd;
-        result.nauticDuskStart = nauticDuskStart;
-        result.civilDawnStart = civilDawnStart;
-        result.astroDuskStart = astroDuskStart;
-        result.nightStart = nightStart;
-        result.nauticDawnStart = nauticDawnStart;
-        result.astroDawnStart = astroDawnStart;
+        result.transit = DateTimeUtils.toCalendar(transit);
+        result.setEnd = DateTimeUtils.toCalendar(setEnd);
+        result.setStart = DateTimeUtils.toCalendar(setStart);
+        result.riseStart = DateTimeUtils.toCalendar(riseStart);
+        result.riseEnd = DateTimeUtils.toCalendar(riseEnd);
+        result.nauticDuskStart = DateTimeUtils.toCalendar(nauticDuskStart);
+        result.civilDawnStart = DateTimeUtils.toCalendar(civilDawnStart);
+        result.astroDuskStart = DateTimeUtils.toCalendar(astroDuskStart);
+        result.nightStart = DateTimeUtils.toCalendar(nightStart);
+        result.nauticDawnStart = DateTimeUtils.toCalendar(nauticDawnStart);
+        result.astroDawnStart = DateTimeUtils.toCalendar(astroDawnStart);
 
         return result;
     }
