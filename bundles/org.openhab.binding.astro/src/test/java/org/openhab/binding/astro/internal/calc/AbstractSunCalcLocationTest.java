@@ -13,11 +13,10 @@
 package org.openhab.binding.astro.internal.calc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
-import org.junit.Test;
 import org.openhab.binding.astro.internal.model.Sun;
 import org.openhab.binding.astro.internal.model.SunPhaseName;
 
@@ -26,45 +25,118 @@ public abstract class AbstractSunCalcLocationTest {
     protected final static int MIDNIGHT_ACCURACY_IN_MILLIS = 5 * 60 * 1000;
 
     protected void testRangesCoherence(Calendar dateTime, double latitude, double longitude) {
+        testRangesCoherenceForNotNullValues(dateTime, latitude, longitude);
+        testRangesCoherenceForContinuity(dateTime, latitude, longitude);
+    }
+
+    protected void testRangesCoherenceForNotNullValues(Calendar dateTime, double latitude, double longitude) {
         SunCalc subject = new SunCalc();
         Sun sun = subject.getSunInfo(dateTime, latitude, longitude, 0.0);
 
-        if (sun.getMorningNight().getEnd() != null) {
-            assertEquals(sun.getMorningNight().getEnd(), sun.getAstroDawn().getStart());
+        if (sun.getMorningNight().getStart() == null ^ sun.getMorningNight().getEnd() == null) {
+            fail("Start or End of MORNING_NIGHT is null");
         }
-        if (sun.getAstroDawn().getEnd() != null) {
+        if (sun.getAstroDawn().getStart() == null ^ sun.getAstroDawn().getEnd() == null) {
+            fail("Start or End of ASTRO_DOWN is null");
+        }
+        if (sun.getNauticDawn().getStart() == null ^ sun.getNauticDawn().getEnd() == null) {
+            fail("Start or End of NAUTIC_DAWN is null");
+        }
+        if (sun.getCivilDawn().getStart() == null ^ sun.getCivilDawn().getEnd() == null) {
+            fail("Start or End of CIVIL_DAWN is null");
+        }
+        if (sun.getRise().getStart() == null ^ sun.getRise().getEnd() == null) {
+            fail("Start or End of RISE is null");
+        }
+        if (sun.getDaylight().getStart() == null ^ sun.getDaylight().getEnd() == null) {
+            fail("Start or End of DAYLIGHT is null");
+        }
+        if (sun.getNoon().getStart() == null ^ sun.getNoon().getEnd() == null) {
+            fail("Start or End of NOON is null");
+        }
+        if (sun.getSet().getStart() == null ^ sun.getSet().getEnd() == null) {
+            fail("Start or End of SET is null");
+        }
+        if (sun.getCivilDusk().getStart() == null ^ sun.getCivilDusk().getEnd() == null) {
+            fail("Start or End of CIVIL_DUSK is null");
+        }
+        if (sun.getNauticDusk().getStart() == null ^ sun.getNauticDusk().getEnd() == null) {
+            fail("Start or End of NAUTIC_DUSK is null");
+        }
+        if (sun.getAstroDusk().getStart() == null ^ sun.getAstroDusk().getEnd() == null) {
+            fail("Start or End of ASTRO_DUSK is null");
+        }
+        if (sun.getEveningNight().getStart() == null ^ sun.getEveningNight().getEnd() == null) {
+            fail("Start or End of EVENING_NIGHT is null");
+        }
+        if (sun.getNight().getStart() == null ^ sun.getNight().getEnd() == null) {
+            fail("Start or End of NIGHT is null");
+        }
+    }
+
+    private void testRangesCoherenceForContinuity(Calendar dateTime, double latitude, double longitude) {
+        SunCalc subject = new SunCalc();
+        Sun sun = subject.getSunInfo(dateTime, latitude, longitude, 0.0);
+
+        if (sun.getMorningNight().isBounded()) {
+            assertEquals(sun.getMorningNight().getEnd(), sun.getAstroDawn().getStart());
+            assertEquals(sun.getMorningNight().getStart(), sun.getTrueMidnight());
+        }
+        if (sun.getAstroDawn().isBounded()) {
             assertEquals(sun.getAstroDawn().getEnd(), sun.getNauticDawn().getStart());
         }
-        if (sun.getNauticDawn().getEnd() != null) {
+        if (sun.getAstroDawn().isBounded() && !sun.getMorningNight().isBounded()) {
+            assertEquals(sun.getAstroDawn().getStart(), sun.getTrueMidnight());
+        }
+        if (sun.getNauticDawn().isBounded()) {
             assertEquals(sun.getNauticDawn().getEnd(), sun.getCivilDawn().getStart());
         }
-        if (sun.getCivilDawn().getEnd() != null) {
+        if (sun.getNauticDawn().isBounded() && !sun.getAstroDawn().isBounded()) {
+            assertEquals(sun.getNauticDawn().getEnd(), sun.getTrueMidnight());
+        }
+        if (sun.getCivilDawn().isBounded()) {
             assertEquals(sun.getCivilDawn().getEnd(), sun.getRise().getStart());
         }
-        if (sun.getRise().getEnd() != null) {
+        if (sun.getCivilDawn().isBounded() && !sun.getNauticDawn().isBounded()) {
+            assertEquals(sun.getCivilDawn().getEnd(), sun.getTrueMidnight());
+        }
+        if (sun.getRise().isBounded()) {
             assertEquals(sun.getRise().getEnd(), sun.getDaylight().getStart());
         }
-        if (sun.getDaylight().getEnd() != null) {
+        if (sun.getDaylight().isBounded()) {
             assertEquals(sun.getDaylight().getEnd(), sun.getSet().getStart());
         }
-        if (sun.getSet().getEnd() != null) {
+        if (sun.getSet().isBounded()) {
             assertEquals(sun.getSet().getEnd(), sun.getCivilDusk().getStart());
         }
-        if (sun.getCivilDusk().getEnd() != null) {
-            assertEquals(sun.getCivilDusk().getEnd(), sun.getNauticDusk().getStart());
+        if (sun.getCivilDusk().isBounded()) {
+            if (sun.getNauticDusk().isBounded()) {
+                assertEquals(sun.getCivilDusk().getEnd(), sun.getNauticDusk().getStart());
+            } else {
+                // nautic dusk not present, so civil dusk must end at next true midnight
+                assertEquals(sun.getCivilDusk().getEnd(), sun.getNextTrueMidnight());
+            }
         }
-        if (sun.getNauticDusk().getEnd() != null) {
-            assertEquals(sun.getNauticDusk().getEnd(), sun.getAstroDusk().getStart());
+        if (sun.getNauticDusk().isBounded()) {
+            if (sun.getAstroDusk().isBounded()) {
+                assertEquals(sun.getNauticDusk().getEnd(), sun.getAstroDusk().getStart());
+            } else {
+                // astro dusk not present, so nautic dusk must end at next true midnight
+                assertEquals(sun.getNauticDusk().getEnd(), sun.getNextTrueMidnight());
+            }
         }
-        if (sun.getAstroDusk().getEnd() != null) {
-            if (sun.getEveningNight().getStart() != null) {
+        if (sun.getAstroDusk().isBounded()) {
+            if (sun.getEveningNight().isBounded()) {
                 // evening night is present
                 assertEquals(sun.getAstroDusk().getEnd(), sun.getEveningNight().getStart());
+            } else {
+                // evening night nopt present, so astro dusk must end at the next true midnight
+                assertEquals(sun.getAstroDusk().getEnd(), sun.getNextTrueMidnight());
             }
-            else
-            {
-                // it must end at the next true midnight
-            }
+        }
+        if (sun.getEveningNight().isBounded()) {
+            // if evening night exist then it must end at next true midnight
+            assertEquals(sun.getEveningNight().getEnd(), sun.getNextTrueMidnight());
         }
     }
 

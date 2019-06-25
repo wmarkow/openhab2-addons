@@ -72,6 +72,15 @@ class SunDailyEventsCalc extends AbstractSunCalc {
         result.nauticDawnStart = DateTimeUtils.toCalendar(nauticDawnStart);
         result.astroDawnStart = DateTimeUtils.toCalendar(astroDawnStart);
 
+        Calendar trueMidnight = (Calendar) result.transit.clone();
+        trueMidnight.add(Calendar.HOUR_OF_DAY, -12);
+
+        Calendar nextTrueMidnight = (Calendar) result.transit.clone();
+        nextTrueMidnight.add(Calendar.HOUR_OF_DAY, 12);
+
+        result.trueMidnight = trueMidnight;
+        result.nextTrueMidnight = nextTrueMidnight;
+
         return result;
     }
 }

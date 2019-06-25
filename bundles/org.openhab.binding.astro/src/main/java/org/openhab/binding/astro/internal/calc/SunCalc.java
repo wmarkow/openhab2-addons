@@ -139,6 +139,8 @@ public class SunCalc extends AbstractSunCalc {
 
         final Calendar transitEnd = ((Calendar) transit.clone());
         transitEnd.add(Calendar.MINUTE, 1);
+        sun.setTrueMidnight(sunDailyEvents.trueMidnight);
+        sun.setNextTrueMidnight(sunDailyEvents.nextTrueMidnight);
         sun.setNoon(new Range(transit, transitEnd));
         sun.setRise(new Range(riseStart, riseEnd));
         sun.setSet(new Range(setStart, setEnd));

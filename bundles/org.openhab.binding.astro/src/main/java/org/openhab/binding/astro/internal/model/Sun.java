@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.astro.internal.model;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +39,9 @@ public class Sun extends RiseSet implements Planet {
     private Radiation radiation = new Radiation();
 
     private SunPhase phase = new SunPhase();
+
+    private Calendar trueMidnight;
+    private Calendar nextTrueMidnight;
 
     /**
      * Returns the astro dawn range.
@@ -293,6 +297,35 @@ public class Sun extends RiseSet implements Planet {
         return ranges;
     }
 
+    /***
+     * Returns the true midnight. It is the beginning of the "solar" day.
+     * 
+     */
+    public Calendar getTrueMidnight() {
+        return trueMidnight;
+    }
+
+    /***
+     * Sets the true midnight.
+     */
+    public void setTrueMidnight(Calendar trueMidnight) {
+        this.trueMidnight = trueMidnight;
+    }
+
+    /***
+     * Returns the true midnight of the next "solar" day.
+     */
+    public Calendar getNextTrueMidnight() {
+        return nextTrueMidnight;
+    }
+
+    /***
+     * Sets the true midnight of the next "solar" day.
+     */
+    public void setNextTrueMidnight(Calendar nextTrueMidnight) {
+        this.nextTrueMidnight = nextTrueMidnight;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("sunrise", getRise())
@@ -301,7 +334,8 @@ public class Sun extends RiseSet implements Planet {
                 .append("nauticDawn", getNauticDawn()).append("civilDawn", getCivilDawn())
                 .append("civilDusk", getCivilDusk()).append("nauticDusk", getNauticDawn())
                 .append("astroDusk", getAstroDusk()).append("daylight", getDaylight())
-                .append("eveningNight", getEveningNight()).append("eclipse", eclipse).append("phase", phase)
+                .append("eveningNight", getEveningNight()).append("trueMidnight", getTrueMidnight())
+                .append("nextTrueMidnight", getNextTrueMidnight()).append("eclipse", eclipse).append("phase", phase)
                 .append("radiation", radiation).toString();
     }
 

@@ -71,6 +71,22 @@ public class Range {
                 .toUnit(SmartHomeUnits.MINUTE);
     }
 
+    /***
+     * Checks if the range is bounded, which is only when {@link #getStart()} and
+     * {@link #getEnd()} are both not null.
+     *
+     */
+    public boolean isBounded() {
+        if (start == null) {
+            return false;
+        }
+        if (end == null) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Returns true, if the given calendar matches into the range.
      */

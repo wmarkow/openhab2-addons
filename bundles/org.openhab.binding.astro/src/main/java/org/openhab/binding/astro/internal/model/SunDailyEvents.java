@@ -42,4 +42,6 @@ public class SunDailyEvents {
     public Calendar nightStart;
     public Calendar nauticDawnStart;
     public Calendar astroDawnStart;
+    public Calendar trueMidnight;
+    public Calendar nextTrueMidnight;
 }
