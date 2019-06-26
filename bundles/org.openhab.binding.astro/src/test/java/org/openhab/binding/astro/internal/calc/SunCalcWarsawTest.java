@@ -97,10 +97,10 @@ public class SunCalcWarsawTest extends AbstractSunCalcLocationTest {
         assertEquals(new GregorianCalendar(2019, Calendar.MAY, 16, 1, 21).getTimeInMillis(),
                 sun.getMorningNight().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
 
-        // show evening night from 16th/17th
-        assertEquals(new GregorianCalendar(2019, Calendar.MAY, 16, 23, 50).getTimeInMillis(),
+        // show evening night from 15th/16th
+        assertEquals(new GregorianCalendar(2019, Calendar.MAY, 15, 23, 42).getTimeInMillis(),
                 sun.getEveningNight().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
-        assertEquals(new GregorianCalendar(2019, Calendar.MAY, 17, 0, 32).getTimeInMillis(),
+        assertEquals(new GregorianCalendar(2019, Calendar.MAY, 16, 0, 32).getTimeInMillis(),
                 sun.getEveningNight().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
 
         // show night from 15th/16th
@@ -188,10 +188,11 @@ public class SunCalcWarsawTest extends AbstractSunCalcLocationTest {
         assertEquals(new GregorianCalendar(2019, Calendar.MAY, 17, 0, 32).getTimeInMillis(),
                 sun.getEveningNight().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
 
-        // show night from 16th/17th
-        assertEquals(new GregorianCalendar(2019, Calendar.MAY, 16, 23, 50).getTimeInMillis(),
+        // we are shortly after true midnight but still currently in NIGHT, need to show
+        // night from 15th/16th
+        assertEquals(new GregorianCalendar(2019, Calendar.MAY, 15, 23, 42).getTimeInMillis(),
                 sun.getNight().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
-        assertEquals(new GregorianCalendar(2019, Calendar.MAY, 17, 1, 13).getTimeInMillis(),
+        assertEquals(new GregorianCalendar(2019, Calendar.MAY, 16, 1, 21).getTimeInMillis(),
                 sun.getNight().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
     }
 

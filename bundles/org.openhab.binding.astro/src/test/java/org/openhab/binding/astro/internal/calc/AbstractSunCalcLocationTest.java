@@ -15,8 +15,13 @@ package org.openhab.binding.astro.internal.calc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
+import org.openhab.binding.astro.internal.model.Range;
 import org.openhab.binding.astro.internal.model.Sun;
 import org.openhab.binding.astro.internal.model.SunPhaseName;
 
@@ -78,65 +83,43 @@ public abstract class AbstractSunCalcLocationTest {
         SunCalc subject = new SunCalc();
         Sun sun = subject.getSunInfo(dateTime, latitude, longitude, 0.0);
 
+        List<Range> ranges = new ArrayList<Range>();
+        
         if (sun.getMorningNight().isBounded()) {
-            assertEquals(sun.getMorningNight().getEnd(), sun.getAstroDawn().getStart());
-            assertEquals(sun.getMorningNight().getStart(), sun.getTrueMidnight());
+            ranges.add(sun.getMorningNight());
         }
         if (sun.getAstroDawn().isBounded()) {
-            assertEquals(sun.getAstroDawn().getEnd(), sun.getNauticDawn().getStart());
-        }
-        if (sun.getAstroDawn().isBounded() && !sun.getMorningNight().isBounded()) {
-            assertEquals(sun.getAstroDawn().getStart(), sun.getTrueMidnight());
+            ranges.add(sun.getAstroDawn());
         }
         if (sun.getNauticDawn().isBounded()) {
-            assertEquals(sun.getNauticDawn().getEnd(), sun.getCivilDawn().getStart());
-        }
-        if (sun.getNauticDawn().isBounded() && !sun.getAstroDawn().isBounded()) {
-            assertEquals(sun.getNauticDawn().getEnd(), sun.getTrueMidnight());
+            ranges.add(sun.getNauticDawn());
         }
         if (sun.getCivilDawn().isBounded()) {
-            assertEquals(sun.getCivilDawn().getEnd(), sun.getRise().getStart());
+            ranges.add(sun.getCivilDawn());
         }
-        if (sun.getCivilDawn().isBounded() && !sun.getNauticDawn().isBounded()) {
-            assertEquals(sun.getCivilDawn().getEnd(), sun.getTrueMidnight());
-        }
-        if (sun.getRise().isBounded()) {
-            assertEquals(sun.getRise().getEnd(), sun.getDaylight().getStart());
-        }
-        if (sun.getDaylight().isBounded()) {
-            assertEquals(sun.getDaylight().getEnd(), sun.getSet().getStart());
-        }
-        if (sun.getSet().isBounded()) {
-            assertEquals(sun.getSet().getEnd(), sun.getCivilDusk().getStart());
-        }
+        ranges.add(sun.getRise());
+        ranges.add(sun.getDaylight());
+        ranges.add(sun.getSet());
         if (sun.getCivilDusk().isBounded()) {
-            if (sun.getNauticDusk().isBounded()) {
-                assertEquals(sun.getCivilDusk().getEnd(), sun.getNauticDusk().getStart());
-            } else {
-                // nautic dusk not present, so civil dusk must end at next true midnight
-                assertEquals(sun.getCivilDusk().getEnd(), sun.getNextTrueMidnight());
-            }
+            ranges.add(sun.getCivilDusk());
         }
         if (sun.getNauticDusk().isBounded()) {
-            if (sun.getAstroDusk().isBounded()) {
-                assertEquals(sun.getNauticDusk().getEnd(), sun.getAstroDusk().getStart());
-            } else {
-                // astro dusk not present, so nautic dusk must end at next true midnight
-                assertEquals(sun.getNauticDusk().getEnd(), sun.getNextTrueMidnight());
-            }
+            ranges.add(sun.getNauticDusk());
         }
         if (sun.getAstroDusk().isBounded()) {
-            if (sun.getEveningNight().isBounded()) {
-                // evening night is present
-                assertEquals(sun.getAstroDusk().getEnd(), sun.getEveningNight().getStart());
-            } else {
-                // evening night nopt present, so astro dusk must end at the next true midnight
-                assertEquals(sun.getAstroDusk().getEnd(), sun.getNextTrueMidnight());
-            }
+            ranges.add(sun.getAstroDusk());
         }
         if (sun.getEveningNight().isBounded()) {
-            // if evening night exist then it must end at next true midnight
-            assertEquals(sun.getEveningNight().getEnd(), sun.getNextTrueMidnight());
+            ranges.add(sun.getEveningNight());
+        }
+
+        Collections.sort(ranges, new RangeComparator());
+
+        for (int q = 0; q < ranges.size() - 1; q++) {
+            Range first = ranges.get(q);
+            Range second = ranges.get(q + 1);
+
+            assertEquals(first.getEnd(), second.getStart());
         }
     }
 
@@ -158,5 +141,25 @@ public abstract class AbstractSunCalcLocationTest {
         assertEquals(sun.getNight(), sun.getAllRanges().get(SunPhaseName.NIGHT));
         assertEquals(sun.getMorningNight(), sun.getAllRanges().get(SunPhaseName.MORNING_NIGHT));
         assertEquals(sun.getEveningNight(), sun.getAllRanges().get(SunPhaseName.EVENING_NIGHT));
+    }
+
+    private class RangeComparator implements Comparator<Range> {
+
+        @Override
+        public int compare(Range o1, Range o2) {
+
+            if(o1.getEnd().getTimeInMillis() <= o2.getStart().getTimeInMillis())
+            {
+                return -1;
+            }
+            
+            if(o1.getStart().getTimeInMillis() == o2.getStart().getTimeInMillis() && o1.getEnd().getTimeInMillis() == o2.getEnd().getTimeInMillis())
+            {
+                return 0;
+            }
+            
+            return 1;
+        }
+
     }
 }
