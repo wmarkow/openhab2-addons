@@ -87,6 +87,21 @@ public class Range {
         return true;
     }
 
+    /***
+     * Checks if current range intersect with the other one.
+     */
+    public boolean hasIntersection(Range other) {
+        if (end != null && other.start != null && other.start.getTimeInMillis() > end.getTimeInMillis()) {
+            return false;
+        }
+
+        if (start != null && other.end != null && other.end.getTimeInMillis() < start.getTimeInMillis()) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Returns true, if the given calendar matches into the range.
      */

@@ -12,7 +12,10 @@
  */
 package org.openhab.binding.astro.internal.model;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
 
 /***
  * A set of Sun daily events, like rise, set, transit, dawn, dusk, etc.
@@ -44,4 +47,126 @@ public class SunDailyEvents {
     public Calendar astroDawnStart;
     public Calendar trueMidnight;
     public Calendar nextTrueMidnight;
+
+    public Range getMorningNightRange() {
+        if (astroDawnStart != null) {
+            return new Range(trueMidnight, astroDawnStart);
+        }
+
+        return new Range();
+    }
+
+    public Range getAstroDawnRange() {
+        if (astroDawnStart != null && nauticDawnStart != null) {
+            return new Range(astroDawnStart, nauticDawnStart);
+        }
+
+        if (astroDawnStart == null && nauticDawnStart != null) {
+            return new Range(trueMidnight, nauticDawnStart);
+        }
+
+        return new Range();
+    }
+
+    public Range getNauticDawnRange() {
+        if (nauticDawnStart != null && civilDawnStart != null) {
+            return new Range(nauticDawnStart, civilDawnStart);
+        }
+
+        if (nauticDawnStart == null && civilDawnStart != null) {
+            return new Range(trueMidnight, civilDawnStart);
+        }
+
+        return new Range();
+    }
+
+    public Range getCivilDawnRange() {
+        if (civilDawnStart != null && riseStart != null) {
+            return new Range(civilDawnStart, riseStart);
+        }
+
+        if (civilDawnStart == null && riseStart != null) {
+            return new Range(trueMidnight, riseStart);
+        }
+
+        return new Range();
+    }
+
+    public Range getRiseRange() {
+        if (riseStart != null && riseEnd != null) {
+            return new Range(riseStart, riseEnd);
+        }
+
+        return new Range();
+    }
+
+    public Range getDaylightRange() {
+        if (riseEnd != null && setStart != null) {
+            return new Range(riseEnd, setStart);
+        }
+
+        return new Range();
+    }
+
+    public Range getNoonRange() {
+        if (transit != null) {
+            final Calendar transitEnd = ((Calendar) transit.clone());
+            transitEnd.add(Calendar.MINUTE, 1);
+
+            return new Range(transit, transitEnd);
+        }
+        return new Range();
+    }
+
+    public Range getSetRange() {
+        if (setStart != null && setEnd != null) {
+            return new Range(setStart, setEnd);
+        }
+
+        return new Range();
+    }
+
+    public Range getCivilDuskRange() {
+        if (setEnd != null && nauticDuskStart != null) {
+            return new Range(setEnd, nauticDuskStart);
+        }
+
+        if (setEnd != null && nauticDuskStart == null) {
+            return new Range(setEnd, nextTrueMidnight);
+        }
+
+        return new Range();
+    }
+
+    public Range getNauticDuskRange() {
+        if (nauticDuskStart != null && astroDuskStart != null) {
+            return new Range(nauticDuskStart, astroDuskStart);
+        }
+
+        if (nauticDuskStart != null && astroDuskStart == null) {
+            return new Range(nauticDuskStart, nextTrueMidnight);
+        }
+
+        return new Range();
+    }
+
+    public Range getAstroDuskRange() {
+        if (astroDuskStart != null && nightStart != null) {
+            return new Range(astroDuskStart, nightStart);
+        }
+
+        if (astroDuskStart != null && nightStart == null) {
+            return new Range(astroDuskStart, nextTrueMidnight);
+        }
+
+        return new Range();
+    }
+
+    public Range getEveningNightRange() {
+        if (nightStart != null) {
+            return new Range(nightStart, nextTrueMidnight);
+        }
+
+        return new Range();
+    }
 }

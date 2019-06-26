@@ -118,84 +118,66 @@ public class SunCalc extends AbstractSunCalc {
         SunDailyEventsCalc sunDailyEventsCalc = new SunDailyEventsCalc();
         SunDailyEvents sunDailyEvents = sunDailyEventsCalc.calculate(calendar, latitude, longitude, altitude);
 
-        Calendar astroDawnStart = sunDailyEvents.astroDawnStart;
-        Calendar nauticDawnStart = sunDailyEvents.nauticDawnStart;
-        Calendar astroDuskStart = sunDailyEvents.astroDuskStart;
-        Calendar nightStart = sunDailyEvents.nightStart;
-        Calendar transit = sunDailyEvents.transit;
-        Calendar riseStart = sunDailyEvents.riseStart;
-        Calendar riseEnd = sunDailyEvents.riseEnd;
-        Calendar setStart = sunDailyEvents.setStart;
-        Calendar setEnd = sunDailyEvents.setEnd;
-        Calendar civilDawnStart = sunDailyEvents.civilDawnStart;
-        Calendar nauticDuskStart = sunDailyEvents.nauticDuskStart;
+        sun.setMorningNight(sunDailyEvents.getMorningNightRange());
+        sun.setAstroDawn(sunDailyEvents.getAstroDawnRange());
+        sun.setNauticDawn(sunDailyEvents.getNauticDawnRange());
+        sun.setCivilDawn(sunDailyEvents.getCivilDawnRange());
+        sun.setRise(sunDailyEvents.getRiseRange());
+        sun.setDaylight(sunDailyEvents.getDaylightRange());
+        sun.setNoon(sunDailyEvents.getNoonRange());
+        sun.setSet(sunDailyEvents.getSetRange());
+        sun.setCivilDusk(sunDailyEvents.getCivilDuskRange());
+        sun.setNauticDusk(sunDailyEvents.getNauticDuskRange());
+        sun.setAstroDusk(sunDailyEvents.getAstroDuskRange());
+        sun.setEveningNight(sunDailyEvents.getEveningNightRange());
 
-        sun.setAstroDawn(new Range(astroDawnStart, nauticDawnStart));
-        sun.setAstroDusk(new Range(astroDuskStart, nightStart));
+        sun.setTrueMidnight(sunDailyEvents.trueMidnight);
+        sun.setNextTrueMidnight(sunDailyEvents.nextTrueMidnight);
 
-        if (onlyAstro) {
+        // if we are between midnight and true midnight then a ranges from previous day
+        // need to be taken into account
+        Calendar midnight = DateTimeUtils.truncateToMidnight(calendar);
+        Range betweenMidnightAndTrueMidnight = new Range(midnight, sunDailyEvents.trueMidnight);
+        if (betweenMidnightAndTrueMidnight.matches(calendar)) {
+            Calendar yesterday = addDays(calendar, -1);
+            SunDailyEvents yesterdayDailyEvents = sunDailyEventsCalc.calculate(yesterday, latitude, longitude,
+                    altitude);
+            if (yesterdayDailyEvents.getEveningNightRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
+                sun.setEveningNight(yesterdayDailyEvents.getEveningNightRange());
+                // also calculate the night
+                sun.setNight(new Range(yesterdayDailyEvents.getEveningNightRange().getStart(),
+                        sunDailyEvents.getMorningNightRange().getEnd()));
+            }
+            if (yesterdayDailyEvents.getAstroDuskRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
+                sun.setAstroDusk(yesterdayDailyEvents.getAstroDuskRange());
+            }
+            
             return;
         }
 
-        final Calendar transitEnd = ((Calendar) transit.clone());
-        transitEnd.add(Calendar.MINUTE, 1);
-        sun.setTrueMidnight(sunDailyEvents.trueMidnight);
-        sun.setNextTrueMidnight(sunDailyEvents.nextTrueMidnight);
-        sun.setNoon(new Range(transit, transitEnd));
-        sun.setRise(new Range(riseStart, riseEnd));
-        sun.setSet(new Range(setStart, setEnd));
+        if (sunDailyEvents.getMorningNightRange().matches(calendar)) {
 
-        sun.setCivilDawn(new Range(civilDawnStart, riseStart));
-        sun.setCivilDusk(new Range(setEnd, nauticDuskStart));
+            // the morning night end is calculated correctly, however it would be good to
+            // have a night start as well. For now lets calculate this date as a symmetric
+            // event to the morning night.
+            long deltaMillis = sunDailyEvents.getMorningNightRange().getEnd().getTimeInMillis()
+                    - sunDailyEvents.trueMidnight.getTimeInMillis();
+            Calendar nightStart = (Calendar) sunDailyEvents.trueMidnight.clone();
+            nightStart.setTimeInMillis(sunDailyEvents.trueMidnight.getTimeInMillis() - deltaMillis);
 
-        sun.setNauticDawn(new Range(nauticDawnStart, civilDawnStart));
-        sun.setNauticDusk(new Range(nauticDuskStart, astroDuskStart));
+            sun.setNight(new Range(nightStart, sunDailyEvents.getMorningNightRange().getEnd()));
+        } else if (sunDailyEvents.getEveningNightRange().isBounded()) {
+            // the evening night start is calculated correctly, however it would be good to
+            // have a night end as well. For now lets calculate this date as a symmetric
+            // event to the evening night.
+            long deltaMillis = sunDailyEvents.nextTrueMidnight.getTimeInMillis()
+                    - sunDailyEvents.getEveningNightRange().getStart().getTimeInMillis();
+            Calendar nightEnd = (Calendar) sunDailyEvents.nextTrueMidnight.clone();
+            nightEnd.setTimeInMillis(sunDailyEvents.nextTrueMidnight.getTimeInMillis() + deltaMillis);
 
-        boolean isSunUpAllDay = isSunUpAllDay(calendar, latitude, longitude, altitude);
-
-        // daylight
-        Range daylightRange = new Range();
-        if (sun.getRise().getStart() == null && sun.getRise().getEnd() == null) {
-            if (isSunUpAllDay) {
-                daylightRange = new Range(DateTimeUtils.truncateToMidnight(calendar),
-                        DateTimeUtils.truncateToMidnight(addDays(calendar, 1)));
-            }
+            sun.setNight(new Range(sunDailyEvents.getEveningNightRange().getStart(), nightEnd));
         } else {
-            daylightRange = new Range(sun.getRise().getEnd(), sun.getSet().getStart());
-        }
-        sun.setDaylight(daylightRange);
-
-        // morning night
-        Sun sunYesterday = new Sun();
-        setDailyEvents(addDays(calendar, -1), latitude, longitude, altitude, sunYesterday, true);
-        Range morningNightRange = null;
-        if (sunYesterday.getAstroDusk().getEnd() != null
-                && DateUtils.isSameDay(sunYesterday.getAstroDusk().getEnd(), calendar)) {
-            morningNightRange = new Range(sunYesterday.getAstroDusk().getEnd(), sun.getAstroDawn().getStart());
-        } else if (isSunUpAllDay || sun.getAstroDawn().getStart() == null) {
-            morningNightRange = new Range();
-        } else {
-            morningNightRange = new Range(DateTimeUtils.truncateToMidnight(calendar), sun.getAstroDawn().getStart());
-        }
-        sun.setMorningNight(morningNightRange);
-
-        // evening night
-        Range eveningNightRange = null;
-        if (sun.getAstroDusk().getEnd() != null && DateUtils.isSameDay(sun.getAstroDusk().getEnd(), calendar)) {
-            eveningNightRange = new Range(sun.getAstroDusk().getEnd(),
-                    DateTimeUtils.truncateToMidnight(addDays(calendar, 1)));
-        } else {
-            eveningNightRange = new Range();
-        }
-        sun.setEveningNight(eveningNightRange);
-
-        // night
-        if (isSunUpAllDay) {
             sun.setNight(new Range());
-        } else {
-            Sun sunTomorrow = new Sun();
-            setDailyEvents(addDays(calendar, 1), latitude, longitude, altitude, sunTomorrow, true);
-            sun.setNight(new Range(sun.getAstroDusk().getEnd(), sunTomorrow.getAstroDawn().getStart()));
         }
     }
 

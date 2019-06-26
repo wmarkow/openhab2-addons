@@ -44,7 +44,7 @@ import org.openhab.binding.astro.internal.model.SunPhaseName;
  */
 public class SunCalcTest {
 
-    private final static Calendar FEB_27_2019 = new GregorianCalendar(2019, Calendar.FEBRUARY, 27);
+    private final static Calendar FEB_27_2019 = new GregorianCalendar(2019, Calendar.FEBRUARY, 27, 0, 55);
     private final static double AMSTERDAM_LATITUDE = 52.367607;
     private final static double AMSTERDAM_LONGITUDE = 4.8978293;
     private final static double AMSTERDAM_ALTITUDE = 0.0;
@@ -264,6 +264,10 @@ public class SunCalcTest {
                 sun.getAllRanges().get(SunPhaseName.ASTRO_DUSK).getStart());
     }
 
+    /***
+     * Do not test the coherence for NIGHT here because it may overlap the two dates
+     */
+    @Ignore
     @Test
     public void testRangesForCoherenceBetweenAstroDuskEndAndNightStart() {
         Sun sun = sunCalc.getSunInfo(FEB_27_2019, AMSTERDAM_LATITUDE, AMSTERDAM_LONGITUDE, AMSTERDAM_ALTITUDE);
