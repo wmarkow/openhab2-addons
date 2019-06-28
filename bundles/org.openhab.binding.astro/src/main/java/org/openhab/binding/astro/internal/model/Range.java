@@ -91,6 +91,11 @@ public class Range {
      * Checks if current range intersect with the other one.
      */
     public boolean hasIntersection(Range other) {
+        if(end == null && start == null)
+        {
+            return false;
+        }
+        
         if (end != null && other.start != null && other.start.getTimeInMillis() > end.getTimeInMillis()) {
             return false;
         }

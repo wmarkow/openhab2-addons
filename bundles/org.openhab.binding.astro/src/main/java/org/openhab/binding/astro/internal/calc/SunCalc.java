@@ -144,41 +144,88 @@ public class SunCalc extends AbstractSunCalc {
                     altitude);
             if (yesterdayDailyEvents.getEveningNightRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
                 sun.setEveningNight(yesterdayDailyEvents.getEveningNightRange());
-                // also calculate the night
-                sun.setNight(new Range(yesterdayDailyEvents.getEveningNightRange().getStart(),
-                        sunDailyEvents.getMorningNightRange().getEnd()));
             }
             if (yesterdayDailyEvents.getAstroDuskRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
                 sun.setAstroDusk(yesterdayDailyEvents.getAstroDuskRange());
             }
-            
+
+            sun.setNight(new Range(yesterdayDailyEvents.getEveningNightRange().getStart(),
+                    sunDailyEvents.getMorningNightRange().getEnd()));
+        } else {
+            if (sunDailyEvents.getMorningNightRange().matches(calendar)) {
+
+                // the morning night end is calculated correctly, however it would be good to
+                // have a night start as well. For now lets calculate this date as a symmetric
+                // event to the morning night.
+                long deltaMillis = sunDailyEvents.getMorningNightRange().getEnd().getTimeInMillis()
+                        - sunDailyEvents.trueMidnight.getTimeInMillis();
+                Calendar nightStart = (Calendar) sunDailyEvents.trueMidnight.clone();
+                nightStart.setTimeInMillis(sunDailyEvents.trueMidnight.getTimeInMillis() - deltaMillis);
+
+                sun.setNight(new Range(nightStart, sunDailyEvents.getMorningNightRange().getEnd()));
+            } else if (sunDailyEvents.getEveningNightRange().isBounded()) {
+                // the evening night start is calculated correctly, however it would be good to
+                // have a night end as well. For now lets calculate this date as a symmetric
+                // event to the evening night.
+                long deltaMillis = sunDailyEvents.nextTrueMidnight.getTimeInMillis()
+                        - sunDailyEvents.getEveningNightRange().getStart().getTimeInMillis();
+                Calendar nightEnd = (Calendar) sunDailyEvents.nextTrueMidnight.clone();
+                nightEnd.setTimeInMillis(sunDailyEvents.nextTrueMidnight.getTimeInMillis() + deltaMillis);
+
+                sun.setNight(new Range(sunDailyEvents.getEveningNightRange().getStart(), nightEnd));
+            } else {
+                sun.setNight(new Range());
+            }
+        }
+
+        checkForTotalDaylight(sunDailyEvents, latitude, longitude, sun);
+    }
+
+    private void checkForTotalDaylight(SunDailyEvents sunDailyEvents, double latitude, double longitude, Sun sun) {
+        if (sunDailyEvents.getRiseRange().isBounded()) {
+            // no total daylight
             return;
         }
 
-        if (sunDailyEvents.getMorningNightRange().matches(calendar)) {
-
-            // the morning night end is calculated correctly, however it would be good to
-            // have a night start as well. For now lets calculate this date as a symmetric
-            // event to the morning night.
-            long deltaMillis = sunDailyEvents.getMorningNightRange().getEnd().getTimeInMillis()
-                    - sunDailyEvents.trueMidnight.getTimeInMillis();
-            Calendar nightStart = (Calendar) sunDailyEvents.trueMidnight.clone();
-            nightStart.setTimeInMillis(sunDailyEvents.trueMidnight.getTimeInMillis() - deltaMillis);
-
-            sun.setNight(new Range(nightStart, sunDailyEvents.getMorningNightRange().getEnd()));
-        } else if (sunDailyEvents.getEveningNightRange().isBounded()) {
-            // the evening night start is calculated correctly, however it would be good to
-            // have a night end as well. For now lets calculate this date as a symmetric
-            // event to the evening night.
-            long deltaMillis = sunDailyEvents.nextTrueMidnight.getTimeInMillis()
-                    - sunDailyEvents.getEveningNightRange().getStart().getTimeInMillis();
-            Calendar nightEnd = (Calendar) sunDailyEvents.nextTrueMidnight.clone();
-            nightEnd.setTimeInMillis(sunDailyEvents.nextTrueMidnight.getTimeInMillis() + deltaMillis);
-
-            sun.setNight(new Range(sunDailyEvents.getEveningNightRange().getStart(), nightEnd));
-        } else {
-            sun.setNight(new Range());
+        if (sunDailyEvents.getSetRange().isBounded()) {
+            // no total daylight
+            return;
         }
+
+        // at this moment there is no rise nor set
+        Sun positionalInfo = new Sun();
+        setPositionalInfo(sunDailyEvents.transit, latitude, longitude, 0.0, positionalInfo);
+
+        if (positionalInfo.getPosition().getElevationAsDouble() < 0) {
+            // there is no total daylight
+            return;
+        }
+
+        // there is a total daylight
+        // need to find a start time and end time of total daylight
+        Calendar cal = (Calendar) sunDailyEvents.transit.clone();
+        SunDailyEventsCalc sunDailyEventsCalc = new SunDailyEventsCalc();
+        Calendar daylightStart = null;
+        Calendar daylightEnd = null;
+        for (int q = 0; q < 190; q++) {
+            cal.add(Calendar.DAY_OF_YEAR, -1);
+            SunDailyEvents sde = sunDailyEventsCalc.calculate(cal, latitude, longitude, 0.0);
+            if (sde.riseEnd != null) {
+                // we have daylight start time
+                daylightStart = sde.riseEnd;
+                break;
+            }
+        }
+        for (int q = 0; q < 190; q++) {
+            cal.add(Calendar.DAY_OF_YEAR, 1);
+            SunDailyEvents sde = sunDailyEventsCalc.calculate(cal, latitude, longitude, 0.0);
+            if (sde.setStart != null) {
+                // we have daylight end time
+                daylightEnd = sde.setStart;
+                break;
+            }
+        }
+        sun.setDaylight(new Range(daylightStart, daylightEnd));
     }
 
     private void setEclipse(Calendar calendar, Sun sun) {

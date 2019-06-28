@@ -84,7 +84,7 @@ public abstract class AbstractSunCalcLocationTest {
         Sun sun = subject.getSunInfo(dateTime, latitude, longitude, 0.0);
 
         List<Range> ranges = new ArrayList<Range>();
-        
+
         if (sun.getMorningNight().isBounded()) {
             ranges.add(sun.getMorningNight());
         }
@@ -97,9 +97,15 @@ public abstract class AbstractSunCalcLocationTest {
         if (sun.getCivilDawn().isBounded()) {
             ranges.add(sun.getCivilDawn());
         }
-        ranges.add(sun.getRise());
-        ranges.add(sun.getDaylight());
-        ranges.add(sun.getSet());
+        if (sun.getRise().isBounded()) {
+            ranges.add(sun.getRise());
+        }
+        if (sun.getDaylight().isBounded()) {
+            ranges.add(sun.getDaylight());
+        }
+        if (sun.getSet().isBounded()) {
+            ranges.add(sun.getSet());
+        }
         if (sun.getCivilDusk().isBounded()) {
             ranges.add(sun.getCivilDusk());
         }
@@ -148,16 +154,15 @@ public abstract class AbstractSunCalcLocationTest {
         @Override
         public int compare(Range o1, Range o2) {
 
-            if(o1.getEnd().getTimeInMillis() <= o2.getStart().getTimeInMillis())
-            {
+            if (o1.getEnd().getTimeInMillis() <= o2.getStart().getTimeInMillis()) {
                 return -1;
             }
-            
-            if(o1.getStart().getTimeInMillis() == o2.getStart().getTimeInMillis() && o1.getEnd().getTimeInMillis() == o2.getEnd().getTimeInMillis())
-            {
+
+            if (o1.getStart().getTimeInMillis() == o2.getStart().getTimeInMillis()
+                    && o1.getEnd().getTimeInMillis() == o2.getEnd().getTimeInMillis()) {
                 return 0;
             }
-            
+
             return 1;
         }
 

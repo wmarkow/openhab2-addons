@@ -13,6 +13,7 @@
 package org.openhab.binding.astro.internal.calc;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import org.openhab.binding.astro.internal.model.SunDailyEvents;
 import org.openhab.binding.astro.internal.util.DateTimeUtils;
@@ -81,6 +82,44 @@ class SunDailyEventsCalc extends AbstractSunCalc {
         result.trueMidnight = trueMidnight;
         result.nextTrueMidnight = nextTrueMidnight;
 
+        updateTimeZone(result, calendar.getTimeZone());
+
         return result;
+    }
+
+    private void updateTimeZone(SunDailyEvents events, TimeZone timeZone) {
+        if (events.transit != null) {
+            events.transit.setTimeZone(timeZone);
+        }
+        if (events.setEnd != null) {
+            events.setEnd.setTimeZone(timeZone);
+        }
+        if (events.setStart != null) {
+            events.setStart.setTimeZone(timeZone);
+        }
+        if (events.riseStart != null) {
+            events.riseStart.setTimeZone(timeZone);
+        }
+        if (events.riseEnd != null) {
+            events.riseEnd.setTimeZone(timeZone);
+        }
+        if (events.nauticDuskStart != null) {
+            events.nauticDuskStart.setTimeZone(timeZone);
+        }
+        if (events.civilDawnStart != null) {
+            events.civilDawnStart.setTimeZone(timeZone);
+        }
+        if (events.astroDuskStart != null) {
+            events.astroDuskStart.setTimeZone(timeZone);
+        }
+        if (events.nightStart != null) {
+            events.nightStart.setTimeZone(timeZone);
+        }
+        if (events.nauticDawnStart != null) {
+            events.nauticDawnStart.setTimeZone(timeZone);
+        }
+        if (events.astroDawnStart != null) {
+            events.astroDawnStart.setTimeZone(timeZone);
+        }
     }
 }
