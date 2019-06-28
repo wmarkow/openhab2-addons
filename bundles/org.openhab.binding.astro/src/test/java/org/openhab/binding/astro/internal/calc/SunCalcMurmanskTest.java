@@ -13,10 +13,8 @@
 package org.openhab.binding.astro.internal.calc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -25,9 +23,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openhab.binding.astro.TestUtils;
 import org.openhab.binding.astro.internal.model.Sun;
-import org.openhab.binding.astro.internal.model.SunPhaseName;
-import org.openhab.binding.astro.internal.util.DateTimeUtils;
 
+/***
+ * Tests the sun daily events for Murmansk city. In particular it tests how
+ * Astro produces the sun daily events on June 21 when in Murmansk a full
+ * daylight is present.
+ * 
+ * @author Witold Markowski
+ *
+ */
 public class SunCalcMurmanskTest extends AbstractSunCalcLocationTest {
 
     private final static double MURMANSK_LATITUDE = 68.9368528;
@@ -45,7 +49,7 @@ public class SunCalcMurmanskTest extends AbstractSunCalcLocationTest {
     public void testRangesFor_2019_June_21_at_midnight() {
         Calendar date = new GregorianCalendar(2019, Calendar.JUNE, 21, 0, 0);
         date.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
-        TimeZone.getAvailableIDs();
+
         Sun sun = subject.getSunInfo(date, MURMANSK_LATITUDE, MURMANSK_LONGITUDE, 0.0);
 
         assertNull(sun.getAstroDawn().getStart());
@@ -61,18 +65,18 @@ public class SunCalcMurmanskTest extends AbstractSunCalcLocationTest {
         assertNull(sun.getRise().getEnd());
 
         // according to https://www.timeanddate.com/sun/russia/murmansk
-        // the DAYLIGHT start on 2019 MAY 21 00:16 local time but this is a moment of
+        // the DAYLIGHT starts on 2019 MAY 21 00:16 local time but this is a moment of
         // SUN RISE start
         // In Astro DAYLIGHT starts when SUN RISE ends.
-        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 24, 0, 5, MOSCOW_TIME_ZONE).getTimeInMillis(),
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 24, 1, 5, MOSCOW_TIME_ZONE).getTimeInMillis(),
                 sun.getDaylight().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
-//        // according to https://www.timeanddate.com/sun/russia/murmansk
-//        // the DAYLIGHT start on 2019 JULY 21 00:45 local time but this is a moment of
-//        // SUN SET end
-//        // In Astro DAYLIGHT ends when SUN SET start
-        assertEquals(TestUtils.newCalendar(2019, Calendar.JULY, 20, 23, 47, MOSCOW_TIME_ZONE).getTimeInMillis(),
+        // according to https://www.timeanddate.com/sun/russia/murmansk
+        // the DAYLIGHT ends on 2019 JULY 21 00:45 local time but this is a moment of
+        // SUN SET end
+        // In Astro DAYLIGHT ends when SUN SET starts
+        assertEquals(TestUtils.newCalendar(2019, Calendar.JULY, 21, 0, 47, MOSCOW_TIME_ZONE).getTimeInMillis(),
                 sun.getDaylight().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
-        // Range[start=Fri May 24 00:05:00 CEST 2019,end=Sat Jul 20 23:47:00 CEST 2019]
+
         assertEquals(TestUtils.newCalendar(2019, Calendar.JUNE, 21, 12, 49, MOSCOW_TIME_ZONE).getTimeInMillis(),
                 sun.getNoon().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
         assertEquals(TestUtils.newCalendar(2019, Calendar.JUNE, 21, 12, 50, MOSCOW_TIME_ZONE).getTimeInMillis(),
@@ -98,6 +102,9 @@ public class SunCalcMurmanskTest extends AbstractSunCalcLocationTest {
 
         assertNull(sun.getNight().getStart());
         assertNull(sun.getNight().getEnd());
+        
+        assertEquals(TestUtils.newCalendar(2019, Calendar.JUNE, 21, 0, 49, MOSCOW_TIME_ZONE).getTimeInMillis(),
+                sun.getTrueMidnight().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
     }
 
     @Test
