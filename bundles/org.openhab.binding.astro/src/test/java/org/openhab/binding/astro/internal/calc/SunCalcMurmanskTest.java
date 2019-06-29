@@ -182,4 +182,9 @@ public class SunCalcMurmanskTest extends AbstractSunCalcLocationTest {
         assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 21, 0, 44, MOSCOW_TIME_ZONE).getTimeInMillis(),
                 sun.getTrueMidnight().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
     }
+
+    @Test
+    public void testRangesCoherenceFor_2019_May_21_at_midnight() {
+        testRangesCoherence(new GregorianCalendar(2019, Calendar.MAY, 21, 0, 0), MURMANSK_LATITUDE, MURMANSK_LONGITUDE);
+    }
 }

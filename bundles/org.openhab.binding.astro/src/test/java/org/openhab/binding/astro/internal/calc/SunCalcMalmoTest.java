@@ -20,6 +20,7 @@ import java.util.GregorianCalendar;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openhab.binding.astro.TestUtils;
 import org.openhab.binding.astro.internal.model.Sun;
 import org.openhab.binding.astro.internal.model.SunPhaseName;
 
@@ -78,9 +79,10 @@ public class SunCalcMalmoTest extends AbstractSunCalcLocationTest {
         assertEquals(new GregorianCalendar(2019, Calendar.JUNE, 21, 22, 56).getTimeInMillis(),
                 sun.getCivilDusk().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
 
-        assertEquals(new GregorianCalendar(2019, Calendar.JUNE, 21, 22, 56).getTimeInMillis(),
+        // show nautic dusk from 20th/21th
+        assertEquals(new GregorianCalendar(2019, Calendar.JUNE, 20, 22, 56).getTimeInMillis(),
                 sun.getNauticDusk().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
-        assertEquals(new GregorianCalendar(2019, Calendar.JUNE, 22, 1, 9).getTimeInMillis(),
+        assertEquals(new GregorianCalendar(2019, Calendar.JUNE, 21, 1, 9).getTimeInMillis(),
                 sun.getNauticDusk().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
 
         assertNull(sun.getAstroDusk().getStart());
@@ -102,8 +104,8 @@ public class SunCalcMalmoTest extends AbstractSunCalcLocationTest {
     }
 
     @Test
-    public void testRangesFor_2019_June_21_at_true_midnight() {
-        Calendar date = new GregorianCalendar(2019, Calendar.JUNE, 21, 1, 9);
+    public void testRangesFor_2019_June_21_after_true_midnight() {
+        Calendar date = new GregorianCalendar(2019, Calendar.JUNE, 21, 1, 15); // for sure after true midnight
         Sun sun = subject.getSunInfo(date, MALMO_LATITUDE, MALMO_LONGITUDE, 0.0);
 
         assertNull(sun.getAstroDawn().getStart());
@@ -144,6 +146,7 @@ public class SunCalcMalmoTest extends AbstractSunCalcLocationTest {
         assertEquals(new GregorianCalendar(2019, Calendar.JUNE, 21, 22, 56).getTimeInMillis(),
                 sun.getCivilDusk().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
 
+     // show nautic dusk from 21th/22th
         assertEquals(new GregorianCalendar(2019, Calendar.JUNE, 21, 22, 56).getTimeInMillis(),
                 sun.getNauticDusk().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
         assertEquals(new GregorianCalendar(2019, Calendar.JUNE, 22, 1, 9).getTimeInMillis(),
@@ -160,8 +163,11 @@ public class SunCalcMalmoTest extends AbstractSunCalcLocationTest {
 
         assertNull(sun.getNight().getStart());
         assertNull(sun.getNight().getEnd());
+
+        assertEquals(new GregorianCalendar(2019, Calendar.JUNE, 21, 1, 9).getTimeInMillis(),
+                sun.getTrueMidnight().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
     }
-    
+
     @Test
     public void testRangesCoherenceFor_2019_June_21_at_true_midnight() {
         testRangesCoherence(new GregorianCalendar(2019, Calendar.JUNE, 21, 1, 9), MALMO_LATITUDE, MALMO_LONGITUDE);
