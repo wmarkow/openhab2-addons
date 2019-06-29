@@ -148,6 +148,12 @@ public class SunCalc extends AbstractSunCalc {
             if (yesterdayDailyEvents.getAstroDuskRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
                 sun.setAstroDusk(yesterdayDailyEvents.getAstroDuskRange());
             }
+            if (yesterdayDailyEvents.getNauticDuskRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
+                sun.setNauticDusk(yesterdayDailyEvents.getNauticDuskRange());
+            }
+            if (yesterdayDailyEvents.getCivilDuskRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
+                sun.setCivilDusk(yesterdayDailyEvents.getCivilDuskRange());
+            }
 
             sun.setNight(new Range(yesterdayDailyEvents.getEveningNightRange().getStart(),
                     sunDailyEvents.getMorningNightRange().getEnd()));
