@@ -65,6 +65,10 @@ public class SunDailyEvents {
             return new Range(trueMidnight, nauticDawnStart);
         }
 
+        if (astroDawnStart != null && nauticDawnStart == null) {
+            return new Range(astroDawnStart, transit);
+        }
+
         return new Range();
     }
 
@@ -77,6 +81,10 @@ public class SunDailyEvents {
             return new Range(trueMidnight, civilDawnStart);
         }
 
+        if (nauticDawnStart != null && civilDawnStart == null) {
+            return new Range(nauticDawnStart, transit);
+        }
+
         return new Range();
     }
 
@@ -87,6 +95,10 @@ public class SunDailyEvents {
 
         if (civilDawnStart == null && riseStart != null) {
             return new Range(trueMidnight, riseStart);
+        }
+
+        if (civilDawnStart != null && riseStart == null) {
+            return new Range(civilDawnStart, transit);
         }
 
         return new Range();
@@ -134,6 +146,10 @@ public class SunDailyEvents {
         if (setEnd != null && nauticDuskStart == null) {
             return new Range(setEnd, nextTrueMidnight);
         }
+        
+        if (setEnd == null && nauticDuskStart != null) {
+            return new Range(transit, nauticDuskStart);
+        }
 
         return new Range();
     }
@@ -146,6 +162,10 @@ public class SunDailyEvents {
         if (nauticDuskStart != null && astroDuskStart == null) {
             return new Range(nauticDuskStart, nextTrueMidnight);
         }
+        
+        if (nauticDuskStart == null && astroDuskStart != null) {
+            return new Range(transit, astroDuskStart);
+        }
 
         return new Range();
     }
@@ -157,6 +177,10 @@ public class SunDailyEvents {
 
         if (astroDuskStart != null && nightStart == null) {
             return new Range(astroDuskStart, nextTrueMidnight);
+        }
+
+        if (astroDuskStart == null && nightStart != null) {
+            return new Range(transit, nightStart);
         }
 
         return new Range();

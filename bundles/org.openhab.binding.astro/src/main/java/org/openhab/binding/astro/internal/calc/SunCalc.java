@@ -163,6 +163,8 @@ public class SunCalc extends AbstractSunCalc {
                 // the morning night end is calculated correctly, however it would be good to
                 // have a night start as well. For now lets calculate this date as a symmetric
                 // event to the morning night.
+                // TODO: is using a symetric event good enough here? Would it be better to
+                // calculate a sun daily events from yesterday?
                 long deltaMillis = sunDailyEvents.getMorningNightRange().getEnd().getTimeInMillis()
                         - sunDailyEvents.trueMidnight.getTimeInMillis();
                 Calendar nightStart = (Calendar) sunDailyEvents.trueMidnight.clone();
@@ -173,6 +175,8 @@ public class SunCalc extends AbstractSunCalc {
                 // the evening night start is calculated correctly, however it would be good to
                 // have a night end as well. For now lets calculate this date as a symmetric
                 // event to the evening night.
+                // TODO: is using a symetric event good enough here? Would it be better to
+                // calculate a sun daily events from tomorrow?
                 long deltaMillis = sunDailyEvents.nextTrueMidnight.getTimeInMillis()
                         - sunDailyEvents.getEveningNightRange().getStart().getTimeInMillis();
                 Calendar nightEnd = (Calendar) sunDailyEvents.nextTrueMidnight.clone();
