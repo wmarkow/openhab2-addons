@@ -121,5 +121,11 @@ class SunDailyEventsCalc extends AbstractSunCalc {
         if (events.astroDawnStart != null) {
             events.astroDawnStart.setTimeZone(timeZone);
         }
+        if (events.trueMidnight != null) {
+            events.trueMidnight.setTimeZone(timeZone);
+        }
+        if (events.nextTrueMidnight != null) {
+            events.nextTrueMidnight.setTimeZone(timeZone);
+        }
     }
 }

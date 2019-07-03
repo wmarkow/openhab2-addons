@@ -27,7 +27,7 @@ import org.openhab.binding.astro.internal.model.SunPhaseName;
 
 public abstract class AbstractSunCalcLocationTest {
     protected final static int NOON_ACCURACY_IN_MILLIS = 5 * 60 * 1000;
-    protected final static int MIDNIGHT_ACCURACY_IN_MILLIS = 2 * NOON_ACCURACY_IN_MILLIS;
+    protected final static int MIDNIGHT_ACCURACY_IN_MILLIS = 3 * NOON_ACCURACY_IN_MILLIS;
 
     protected void testRangesCoherence(Calendar dateTime, double latitude, double longitude) {
         testRangesCoherenceForNotNullValues(dateTime, latitude, longitude);
