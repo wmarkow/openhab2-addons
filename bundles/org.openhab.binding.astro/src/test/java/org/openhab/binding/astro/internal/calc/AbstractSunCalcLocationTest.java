@@ -25,6 +25,13 @@ import org.openhab.binding.astro.internal.model.Range;
 import org.openhab.binding.astro.internal.model.Sun;
 import org.openhab.binding.astro.internal.model.SunPhaseName;
 
+/***
+ * Abstract class for testing the range coherence of daily events calculated by
+ * Astro.
+ * 
+ * @author Witold Markowski
+ *
+ */
 public abstract class AbstractSunCalcLocationTest {
     protected final static int NOON_ACCURACY_IN_MILLIS = 5 * 60 * 1000;
     protected final static int MIDNIGHT_ACCURACY_IN_MILLIS = 3 * NOON_ACCURACY_IN_MILLIS;
@@ -32,9 +39,10 @@ public abstract class AbstractSunCalcLocationTest {
     protected void testRangesCoherence(Calendar dateTime, double latitude, double longitude) {
         testRangesCoherenceForNotNullValues(dateTime, latitude, longitude);
         testRangesCoherenceForContinuity(dateTime, latitude, longitude);
+        testGetAllRanges(dateTime, latitude, longitude);
     }
 
-    protected void testRangesCoherenceForNotNullValues(Calendar dateTime, double latitude, double longitude) {
+    private void testRangesCoherenceForNotNullValues(Calendar dateTime, double latitude, double longitude) {
         SunCalc subject = new SunCalc();
         Sun sun = subject.getSunInfo(dateTime, latitude, longitude, 0.0);
 
@@ -129,7 +137,7 @@ public abstract class AbstractSunCalcLocationTest {
         }
     }
 
-    protected void testGetAllRanges(Calendar dateTime, double latitude, double longitude) {
+    private void testGetAllRanges(Calendar dateTime, double latitude, double longitude) {
         SunCalc subject = new SunCalc();
         Sun sun = subject.getSunInfo(dateTime, latitude, longitude, 0.0);
 
