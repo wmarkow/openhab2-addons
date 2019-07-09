@@ -40,27 +40,12 @@ public class SunCalc extends AbstractSunCalc {
      * Calculates the sun position (azimuth and elevation).
      */
     public void setPositionalInfo(Calendar calendar, double latitude, double longitude, Double altitude, Sun sun) {
-        double lw = -longitude * DEG2RAD;
-        double phi = latitude * DEG2RAD;
+        SunPositionCalc sunPositionCalc = new SunPositionCalc();
+        Position position = sunPositionCalc.calculate(calendar, latitude, longitude);
 
-        double j = DateTimeUtils.dateToJulianDate(calendar);
-        double m = getSolarMeanAnomaly(j);
-        double c = getEquationOfCenter(m);
-        double lsun = getEclipticLongitude(m, c);
-        double d = getSunDeclination(lsun);
-        double a = getRightAscension(lsun);
-        double th = getSiderealTime(j, lw);
+        sun.setPosition(position);
 
-        double azimuth = getAzimuth(th, a, phi, d) / DEG2RAD;
-        double elevation = getElevation(th, a, phi, d) / DEG2RAD;
-        double shadeLength = getShadeLength(elevation);
-
-        Position position = sun.getPosition();
-        position.setAzimuth(azimuth + 180);
-        position.setElevation(elevation);
-        position.setShadeLength(shadeLength);
-
-        setRadiationInfo(calendar, elevation, altitude, sun);
+        setRadiationInfo(calendar, position.getElevationAsDouble(), altitude, sun);
     }
 
     /**

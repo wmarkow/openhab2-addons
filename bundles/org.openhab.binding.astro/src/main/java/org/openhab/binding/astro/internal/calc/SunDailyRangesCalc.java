@@ -14,8 +14,8 @@ package org.openhab.binding.astro.internal.calc;
 
 import java.util.Calendar;
 
+import org.openhab.binding.astro.internal.model.Position;
 import org.openhab.binding.astro.internal.model.Range;
-import org.openhab.binding.astro.internal.model.Sun;
 import org.openhab.binding.astro.internal.model.SunDailyEvents;
 import org.openhab.binding.astro.internal.model.SunDailyRanges;
 import org.openhab.binding.astro.internal.util.DateTimeUtils;
@@ -122,10 +122,10 @@ public class SunDailyRangesCalc {
         }
 
         // at this moment there is no rise nor set
-        Sun positionalInfo = new Sun();
-        setPositionalInfo(sunDailyEvents.transit, latitude, longitude, 0.0, positionalInfo);
+        SunPositionCalc sunPositionCalc = new SunPositionCalc();
+        Position position = sunPositionCalc.calculate(sunDailyEvents.transit, latitude, longitude);
 
-        if (positionalInfo.getPosition().getElevationAsDouble() < 0) {
+        if (position.getElevationAsDouble() < 0) {
             // there is no total daylight
             return;
         }
