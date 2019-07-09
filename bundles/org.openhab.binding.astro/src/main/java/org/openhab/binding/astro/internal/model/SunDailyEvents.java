@@ -12,10 +12,7 @@
  */
 package org.openhab.binding.astro.internal.model;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
 
 /***
  * A set of Sun daily events, like rise, set, transit, dawn, dusk, etc.
@@ -146,7 +143,7 @@ public class SunDailyEvents {
         if (setEnd != null && nauticDuskStart == null) {
             return new Range(setEnd, nextTrueMidnight);
         }
-        
+
         if (setEnd == null && nauticDuskStart != null) {
             return new Range(transit, nauticDuskStart);
         }
@@ -162,7 +159,7 @@ public class SunDailyEvents {
         if (nauticDuskStart != null && astroDuskStart == null) {
             return new Range(nauticDuskStart, nextTrueMidnight);
         }
-        
+
         if (nauticDuskStart == null && astroDuskStart != null) {
             return new Range(transit, astroDuskStart);
         }

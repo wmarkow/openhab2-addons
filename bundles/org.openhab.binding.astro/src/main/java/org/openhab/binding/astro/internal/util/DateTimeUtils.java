@@ -204,6 +204,16 @@ public class DateTimeUtils {
         return cCal;
     }
 
+    /**
+     * Adds the specified days to the calendar.
+     * 
+     */
+    public static Calendar addDays(Calendar calendar, int days) {
+        Calendar cal = (Calendar) calendar.clone();
+        cal.add(Calendar.DAY_OF_MONTH, days);
+        return cal;
+    }
+    
     private static Calendar adjustTime(Calendar cal, int minutes) {
         if (minutes > 0) {
             Calendar cTime = Calendar.getInstance();

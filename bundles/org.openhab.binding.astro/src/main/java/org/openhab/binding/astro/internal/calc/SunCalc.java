@@ -15,12 +15,11 @@ package org.openhab.binding.astro.internal.calc;
 import java.util.Calendar;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.openhab.binding.astro.internal.model.Position;
 import org.openhab.binding.astro.internal.model.Radiation;
 import org.openhab.binding.astro.internal.model.Range;
 import org.openhab.binding.astro.internal.model.Sun;
-import org.openhab.binding.astro.internal.model.SunDailyEvents;
+import org.openhab.binding.astro.internal.model.SunDailyRanges;
 import org.openhab.binding.astro.internal.model.SunEclipse;
 import org.openhab.binding.astro.internal.model.SunPhaseName;
 import org.openhab.binding.astro.internal.util.DateTimeUtils;
@@ -33,14 +32,9 @@ import org.openhab.binding.astro.internal.util.DateTimeUtils;
  * @see based on the calculations of http://www.suncalc.net
  */
 public class SunCalc extends AbstractSunCalc {
-    private static final double J2000 = 2451545.0;
     private static final double SC = 1367; // Solar constant in W/m²
     public static final double DEG2RAD = Math.PI / 180;
     public static final double RAD2DEG = 180. / Math.PI;
-
-    private static final double MINUTES_PER_DAY = 60 * 24;
-    private static final int CURVE_TIME_INTERVAL = 20; // 20 minutes
-    private static final double JD_ONE_MINUTE_FRACTION = 1.0 / 60 / 24;
 
     /**
      * Calculates the sun position (azimuth and elevation).
@@ -115,127 +109,24 @@ public class SunCalc extends AbstractSunCalc {
 
     private void setDailyEvents(Calendar calendar, double latitude, double longitude, Double altitude, Sun sun,
             boolean onlyAstro) {
-        SunDailyEventsCalc sunDailyEventsCalc = new SunDailyEventsCalc();
-        SunDailyEvents sunDailyEvents = sunDailyEventsCalc.calculate(calendar, latitude, longitude, altitude);
+        SunDailyRangesCalc sunDailyRangesCalc = new SunDailyRangesCalc();
+        SunDailyRanges sunDailyRanges = sunDailyRangesCalc.calculate(calendar, latitude, longitude, altitude);
 
-        sun.setMorningNight(sunDailyEvents.getMorningNightRange());
-        sun.setAstroDawn(sunDailyEvents.getAstroDawnRange());
-        sun.setNauticDawn(sunDailyEvents.getNauticDawnRange());
-        sun.setCivilDawn(sunDailyEvents.getCivilDawnRange());
-        sun.setRise(sunDailyEvents.getRiseRange());
-        sun.setDaylight(sunDailyEvents.getDaylightRange());
-        sun.setNoon(sunDailyEvents.getNoonRange());
-        sun.setSet(sunDailyEvents.getSetRange());
-        sun.setCivilDusk(sunDailyEvents.getCivilDuskRange());
-        sun.setNauticDusk(sunDailyEvents.getNauticDuskRange());
-        sun.setAstroDusk(sunDailyEvents.getAstroDuskRange());
-        sun.setEveningNight(sunDailyEvents.getEveningNightRange());
+        sun.setMorningNight(sunDailyRanges.getMorningNight());
+        sun.setAstroDawn(sunDailyRanges.getAstroDawn());
+        sun.setNauticDawn(sunDailyRanges.getNauticDawn());
+        sun.setCivilDawn(sunDailyRanges.getCivilDawn());
+        sun.setRise(sunDailyRanges.getRise());
+        sun.setDaylight(sunDailyRanges.getDaylight());
+        sun.setNoon(sunDailyRanges.getNoon());
+        sun.setSet(sunDailyRanges.getSet());
+        sun.setCivilDusk(sunDailyRanges.getCivilDusk());
+        sun.setNauticDusk(sunDailyRanges.getNauticDusk());
+        sun.setAstroDusk(sunDailyRanges.getAstroDusk());
+        sun.setEveningNight(sunDailyRanges.getEveningNight());
 
-        sun.setTrueMidnight(sunDailyEvents.trueMidnight);
-        sun.setNextTrueMidnight(sunDailyEvents.nextTrueMidnight);
-
-        // if we are between midnight and true midnight then a ranges from previous day
-        // need to be taken into account
-        Calendar midnight = DateTimeUtils.truncateToMidnight(calendar);
-        Range betweenMidnightAndTrueMidnight = new Range(midnight, sunDailyEvents.trueMidnight);
-        if (betweenMidnightAndTrueMidnight.matches(calendar)) {
-            Calendar yesterday = addDays(calendar, -1);
-            SunDailyEvents yesterdayDailyEvents = sunDailyEventsCalc.calculate(yesterday, latitude, longitude,
-                    altitude);
-            if (yesterdayDailyEvents.getEveningNightRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
-                sun.setEveningNight(yesterdayDailyEvents.getEveningNightRange());
-            }
-            if (yesterdayDailyEvents.getAstroDuskRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
-                sun.setAstroDusk(yesterdayDailyEvents.getAstroDuskRange());
-            }
-            if (yesterdayDailyEvents.getNauticDuskRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
-                sun.setNauticDusk(yesterdayDailyEvents.getNauticDuskRange());
-            }
-            if (yesterdayDailyEvents.getCivilDuskRange().hasIntersection(betweenMidnightAndTrueMidnight)) {
-                sun.setCivilDusk(yesterdayDailyEvents.getCivilDuskRange());
-            }
-
-            sun.setNight(new Range(yesterdayDailyEvents.getEveningNightRange().getStart(),
-                    sunDailyEvents.getMorningNightRange().getEnd()));
-        } else {
-            if (sunDailyEvents.getMorningNightRange().matches(calendar)) {
-
-                // the morning night end is calculated correctly, however it would be good to
-                // have a night start as well. For now lets calculate this date as a symmetric
-                // event to the morning night.
-                // TODO: is using a symetric event good enough here? Would it be better to
-                // calculate a sun daily events from yesterday?
-                long deltaMillis = sunDailyEvents.getMorningNightRange().getEnd().getTimeInMillis()
-                        - sunDailyEvents.trueMidnight.getTimeInMillis();
-                Calendar nightStart = (Calendar) sunDailyEvents.trueMidnight.clone();
-                nightStart.setTimeInMillis(sunDailyEvents.trueMidnight.getTimeInMillis() - deltaMillis);
-
-                sun.setNight(new Range(nightStart, sunDailyEvents.getMorningNightRange().getEnd()));
-            } else if (sunDailyEvents.getEveningNightRange().isBounded()) {
-                // the evening night start is calculated correctly, however it would be good to
-                // have a night end as well. For now lets calculate this date as a symmetric
-                // event to the evening night.
-                // TODO: is using a symetric event good enough here? Would it be better to
-                // calculate a sun daily events from tomorrow?
-                long deltaMillis = sunDailyEvents.nextTrueMidnight.getTimeInMillis()
-                        - sunDailyEvents.getEveningNightRange().getStart().getTimeInMillis();
-                Calendar nightEnd = (Calendar) sunDailyEvents.nextTrueMidnight.clone();
-                nightEnd.setTimeInMillis(sunDailyEvents.nextTrueMidnight.getTimeInMillis() + deltaMillis);
-
-                sun.setNight(new Range(sunDailyEvents.getEveningNightRange().getStart(), nightEnd));
-            } else {
-                sun.setNight(new Range());
-            }
-        }
-
-        checkForTotalDaylight(sunDailyEvents, latitude, longitude, sun);
-    }
-
-    private void checkForTotalDaylight(SunDailyEvents sunDailyEvents, double latitude, double longitude, Sun sun) {
-        if (sunDailyEvents.getRiseRange().isBounded()) {
-            // no total daylight
-            return;
-        }
-
-        if (sunDailyEvents.getSetRange().isBounded()) {
-            // no total daylight
-            return;
-        }
-
-        // at this moment there is no rise nor set
-        Sun positionalInfo = new Sun();
-        setPositionalInfo(sunDailyEvents.transit, latitude, longitude, 0.0, positionalInfo);
-
-        if (positionalInfo.getPosition().getElevationAsDouble() < 0) {
-            // there is no total daylight
-            return;
-        }
-
-        // there is a total daylight
-        // need to find a start time and end time of total daylight
-        Calendar cal = (Calendar) sunDailyEvents.transit.clone();
-        SunDailyEventsCalc sunDailyEventsCalc = new SunDailyEventsCalc();
-        Calendar daylightStart = null;
-        Calendar daylightEnd = null;
-        for (int q = 0; q < 190; q++) {
-            cal.add(Calendar.DAY_OF_YEAR, -1);
-            SunDailyEvents sde = sunDailyEventsCalc.calculate(cal, latitude, longitude, 0.0);
-            if (sde.riseEnd != null) {
-                // we have daylight start time
-                daylightStart = sde.riseEnd;
-                break;
-            }
-        }
-        for (int q = 0; q < 190; q++) {
-            cal.add(Calendar.DAY_OF_YEAR, 1);
-            SunDailyEvents sde = sunDailyEventsCalc.calculate(cal, latitude, longitude, 0.0);
-            if (sde.setStart != null) {
-                // we have daylight end time
-                daylightEnd = sde.setStart;
-                break;
-            }
-        }
-        sun.setDaylight(new Range(daylightStart, daylightEnd));
+        sun.setTrueMidnight(sunDailyRanges.getTrueMidnight());
+        sun.setNextTrueMidnight(sunDailyRanges.getNextTrueMidnight());
     }
 
     private void setEclipse(Calendar calendar, Sun sun) {
@@ -273,30 +164,5 @@ public class SunCalc extends AbstractSunCalc {
                 }
             }
         }
-    }
-
-    /**
-     * Returns true, if the sun is up all day (no rise and set).
-     */
-    private boolean isSunUpAllDay(Calendar calendar, double latitude, double longitude, Double altitude) {
-        Calendar cal = DateTimeUtils.truncateToMidnight(calendar);
-        Sun sun = new Sun();
-        for (int minutes = 0; minutes <= MINUTES_PER_DAY; minutes += CURVE_TIME_INTERVAL) {
-            setPositionalInfo(cal, latitude, longitude, altitude, sun);
-            if (sun.getPosition().getElevationAsDouble() < SUN_ANGLE) {
-                return false;
-            }
-            cal.add(Calendar.MINUTE, CURVE_TIME_INTERVAL);
-        }
-        return true;
-    }
-
-    /**
-     * Adds the specified days to the calendar.
-     */
-    private Calendar addDays(Calendar calendar, int days) {
-        Calendar cal = (Calendar) calendar.clone();
-        cal.add(Calendar.DAY_OF_MONTH, days);
-        return cal;
     }
 }
