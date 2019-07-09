@@ -109,6 +109,7 @@ public class SunCalc extends AbstractSunCalc {
         sun.setNauticDusk(sunDailyRanges.getNauticDusk());
         sun.setAstroDusk(sunDailyRanges.getAstroDusk());
         sun.setEveningNight(sunDailyRanges.getEveningNight());
+        sun.setNight(sunDailyRanges.getNight());
 
         sun.setTrueMidnight(sunDailyRanges.getTrueMidnight());
         sun.setNextTrueMidnight(sunDailyRanges.getNextTrueMidnight());

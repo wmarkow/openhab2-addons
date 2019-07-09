@@ -106,7 +106,7 @@ public class SunDailyRangesCalc {
 
         checkForTotalDaylight(sunDailyEvents, latitude, longitude, result);
 
-        return new SunDailyRanges();
+        return result;
     }
 
     private void checkForTotalDaylight(SunDailyEvents sunDailyEvents, double latitude, double longitude,
