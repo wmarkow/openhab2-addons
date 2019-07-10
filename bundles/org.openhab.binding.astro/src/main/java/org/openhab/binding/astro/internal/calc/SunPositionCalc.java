@@ -20,7 +20,8 @@ import org.openhab.binding.astro.internal.util.DateTimeUtils;
 /***
  * For a specific date, time and geolocation calculates {@link Position}.
  * 
- * @author Witold Markowski
+ * @author Witold Markowski - Refactoring
+ * @see based on the calculations of http://www.suncalc.net
  *
  */
 public class SunPositionCalc extends AbstractSunCalc {

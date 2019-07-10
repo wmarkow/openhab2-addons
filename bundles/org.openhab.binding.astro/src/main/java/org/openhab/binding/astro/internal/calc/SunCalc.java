@@ -29,10 +29,10 @@ import org.openhab.binding.astro.internal.util.DateTimeUtils;
  *
  * @author Gerhard Riegler - Initial contribution
  * @author Christoph Weitkamp - Introduced UoM
+ * @author Witold Markowski - Rafactoring
  * @see based on the calculations of http://www.suncalc.net
  */
 public class SunCalc extends AbstractSunCalc {
-    private static final double SC = 1367; // Solar constant in W/m²
     public static final double DEG2RAD = Math.PI / 180;
     public static final double RAD2DEG = 180. / Math.PI;
 
@@ -51,30 +51,13 @@ public class SunCalc extends AbstractSunCalc {
     /**
      * Calculates sun radiation data.
      */
-    public void setRadiationInfo(Calendar calendar, double elevation, Double altitude, Sun sun) {
-        double sinAlpha = Math.sin(DEG2RAD * elevation);
+    private void setRadiationInfo(Calendar calendar, double elevation, Double altitude, Sun sun) {
+        SunRadiationCalc sunRadiationCalc = new SunRadiationCalc();
+        Radiation radiation = sunRadiationCalc.calculate(calendar, elevation, altitude);
 
-        int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
-        int daysInYear = calendar.getActualMaximum(Calendar.DAY_OF_YEAR);
-
-        // Direct Solar Radiation (in W/m²) at the atmosphere entry
-        // At sunrise/sunset - calculations limits are reached
-        double rOut = (elevation > 3) ? SC * (0.034 * Math.cos(DEG2RAD * (360 * dayOfYear / daysInYear)) + 1) : 0;
-        double altitudeRatio = (altitude != null) ? 1 / Math.pow((1 - (6.5 / 288) * (altitude / 1000.0)), 5.256) : 1;
-        double m = (Math.sqrt(1229 + Math.pow(614 * sinAlpha, 2)) - 614 * sinAlpha) * altitudeRatio;
-
-        // Direct radiation after atmospheric layer
-        // 0.6 = Coefficient de transmissivité
-        double rDir = rOut * Math.pow(0.6, m) * sinAlpha;
-
-        // Diffuse Radiation
-        double rDiff = rOut * (0.271 - 0.294 * Math.pow(0.6, m)) * sinAlpha;
-        double rTot = rDir + rDiff;
-
-        Radiation radiation = sun.getRadiation();
-        radiation.setDirect(rDir);
-        radiation.setDiffuse(rDiff);
-        radiation.setTotal(rTot);
+        sun.getRadiation().setDirect(radiation.getDirect().doubleValue());
+        sun.getRadiation().setDiffuse(radiation.getDiffuse().doubleValue());
+        sun.getRadiation().setTotal(radiation.getTotal().doubleValue());
     }
 
     /**
