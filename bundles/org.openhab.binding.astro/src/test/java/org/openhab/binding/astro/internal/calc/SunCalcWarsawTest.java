@@ -126,6 +126,83 @@ public class SunCalcWarsawTest extends AbstractSunCalcLocationTest {
     }
 
     @Test
+    public void testRangesFor_2019_May_16_at_noon() {
+        Calendar date = TestUtils.newCalendar(2019, Calendar.MAY, 16, 12, 32, TIME_ZONE);
+        Sun sun = subject.getSunInfo(date, LATITUDE, LONGITUDE, 0.0);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 1, 21, TIME_ZONE).getTimeInMillis(),
+                sun.getAstroDawn().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 2, 58, TIME_ZONE).getTimeInMillis(),
+                sun.getAstroDawn().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 2, 58, TIME_ZONE).getTimeInMillis(),
+                sun.getNauticDawn().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 3, 57, TIME_ZONE).getTimeInMillis(),
+                sun.getNauticDawn().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 3, 57, TIME_ZONE).getTimeInMillis(),
+                sun.getCivilDawn().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 4, 40, TIME_ZONE).getTimeInMillis(),
+                sun.getCivilDawn().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 4, 40, TIME_ZONE).getTimeInMillis(),
+                sun.getRise().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 4, 45, TIME_ZONE).getTimeInMillis(),
+                sun.getRise().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 4, 45, TIME_ZONE).getTimeInMillis(),
+                sun.getDaylight().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 20, 25, TIME_ZONE).getTimeInMillis(),
+                sun.getDaylight().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 12, 32, TIME_ZONE).getTimeInMillis(),
+                sun.getNoon().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 12, 33, TIME_ZONE).getTimeInMillis(),
+                sun.getNoon().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 20, 21, TIME_ZONE).getTimeInMillis(),
+                sun.getSet().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 20, 25, TIME_ZONE).getTimeInMillis(),
+                sun.getSet().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 20, 25, TIME_ZONE).getTimeInMillis(),
+                sun.getCivilDusk().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 21, 8, TIME_ZONE).getTimeInMillis(),
+                sun.getCivilDusk().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 21, 8, TIME_ZONE).getTimeInMillis(),
+                sun.getNauticDusk().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 22, 8, TIME_ZONE).getTimeInMillis(),
+                sun.getNauticDusk().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 22, 8, TIME_ZONE).getTimeInMillis(),
+                sun.getAstroDusk().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 23, 50, TIME_ZONE).getTimeInMillis(),
+                sun.getAstroDusk().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        // show morning night from 16th
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 0, 32, TIME_ZONE).getTimeInMillis(),
+                sun.getMorningNight().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 1, 21, TIME_ZONE).getTimeInMillis(),
+                sun.getMorningNight().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        // show evening night from 16th/17th
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 23, 50, TIME_ZONE).getTimeInMillis(),
+                sun.getEveningNight().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 17, 0, 32, TIME_ZONE).getTimeInMillis(),
+                sun.getEveningNight().getEnd().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+
+        // show night from 16th/17th
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 23, 50, TIME_ZONE).getTimeInMillis(),
+                sun.getNight().getStart().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 17, 1, 13, TIME_ZONE).getTimeInMillis(),
+                sun.getNight().getEnd().getTimeInMillis(), MIDNIGHT_ACCURACY_IN_MILLIS);
+        
+        assertEquals(TestUtils.newCalendar(2019, Calendar.MAY, 16, 0, 32, TIME_ZONE).getTimeInMillis(),
+                sun.getTrueMidnight().getTimeInMillis(), NOON_ACCURACY_IN_MILLIS);
+    }
+    
+    @Test
     public void testRangesCoherenceFor_2019_May_16_at_midnight() {
         testRangesCoherence(TestUtils.newCalendar(2019, Calendar.MAY, 16, 0, 0, TIME_ZONE), LATITUDE, LONGITUDE);
     }
