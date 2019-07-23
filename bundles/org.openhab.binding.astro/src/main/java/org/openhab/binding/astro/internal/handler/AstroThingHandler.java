@@ -64,7 +64,7 @@ public abstract class AstroThingHandler extends BaseThingHandler {
 
     private int linkedPositionalChannels = 0;
     protected AstroThingConfig thingConfig;
-    private final Lock monitor = new ReentrantLock();
+    protected final Lock monitor = new ReentrantLock();
 
     private ScheduledCompletableFuture dailyJob;
     private final Set<ScheduledFuture<?>> scheduledFutures = new HashSet<>();
@@ -72,6 +72,11 @@ public abstract class AstroThingHandler extends BaseThingHandler {
     public AstroThingHandler(Thing thing, CronScheduler scheduler) {
         super(thing);
         this.cronScheduler = scheduler;
+    }
+
+    protected AstroThingHandler(Thing thing) {
+        super(thing);
+        cronScheduler = null;
     }
 
     @Override
@@ -160,10 +165,10 @@ public abstract class AstroThingHandler extends BaseThingHandler {
     }
 
     /**
-     * Schedules a positional and a daily job at midnight for Astro calculation and starts it immediately too. Removes
-     * already scheduled jobs first.
+     * Schedules a positional and a daily job at midnight for Astro calculation and
+     * starts it immediately too. Removes already scheduled jobs first.
      */
-    private void restartJobs() {
+    protected void restartJobs() {
         logger.debug("Restarting jobs for thing {}", getThing().getUID());
         monitor.lock();
         try {
@@ -181,15 +186,7 @@ public abstract class AstroThingHandler extends BaseThingHandler {
                 // Execute daily startup job immediately
                 runnable.run();
 
-                // Repeat positional job every configured seconds
-                // Use scheduleAtFixedRate to avoid time drift associated with scheduleWithFixedDelay
-                if (isPositionalChannelLinked()) {
-                    Job positionalJob = new PositionalJob(thingUID);
-                    ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(positionalJob, 0,
-                            thingConfig.getInterval(), TimeUnit.SECONDS);
-                    scheduledFutures.add(future);
-                    logger.info("Scheduled {} every {} seconds", positionalJob, thingConfig.getInterval());
-                }
+                schedulePositionalJob(thingUID);
             }
         } finally {
             monitor.unlock();
@@ -199,7 +196,7 @@ public abstract class AstroThingHandler extends BaseThingHandler {
     /**
      * Stops all jobs for this thing.
      */
-    private void stopJobs() {
+    protected void stopJobs() {
         logger.debug("Stopping scheduled jobs for thing {}", getThing().getUID());
         monitor.lock();
         try {
@@ -274,7 +271,8 @@ public abstract class AstroThingHandler extends BaseThingHandler {
     /**
      * Adds the provided {@link Job} to the queue (cannot be {@code null})
      *
-     * @return {@code true} if the {@code job} is added to the queue, otherwise {@code false}
+     * @return {@code true} if the {@code job} is added to the queue, otherwise
+     *         {@code false}
      */
     public void schedule(Job job, Calendar eventAt) {
         long sleepTime;
@@ -290,6 +288,19 @@ public abstract class AstroThingHandler extends BaseThingHandler {
         if (logger.isDebugEnabled()) {
             String formattedDate = DateFormatUtils.ISO_DATETIME_FORMAT.format(eventAt);
             logger.debug("Scheduled {} in {}ms (at {})", job, sleepTime, formattedDate);
+        }
+    }
+
+    protected void schedulePositionalJob(String thingUID) {
+        // Repeat positional job every configured seconds
+        // Use scheduleAtFixedRate to avoid time drift associated with
+        // scheduleWithFixedDelay
+        if (isPositionalChannelLinked()) {
+            Job positionalJob = new PositionalJob(thingUID);
+            ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(positionalJob, 0, thingConfig.getInterval(),
+                    TimeUnit.SECONDS);
+            scheduledFutures.add(future);
+            logger.info("Scheduled {} every {} seconds", positionalJob, thingConfig.getInterval());
         }
     }
 

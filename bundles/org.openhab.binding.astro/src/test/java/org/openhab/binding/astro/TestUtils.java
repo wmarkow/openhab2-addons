@@ -11,4 +11,12 @@ public class TestUtils {
 
         return result;
     }
+
+    public static Calendar newCalendar(int year, int month, int day, int hour, int minute, int second,
+            TimeZone timeZone) {
+        Calendar result = new GregorianCalendar(year, month, day, hour, minute, second);
+        result.setTimeZone(timeZone);
+
+        return result;
+    }
 }

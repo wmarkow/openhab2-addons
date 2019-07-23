@@ -58,7 +58,7 @@ public class AstroHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
         AstroThingHandler thingHandler = null;
         if (thingTypeUID.equals(THING_TYPE_SUN)) {
-            thingHandler = new SunHandler(thing, scheduler);
+            thingHandler = new SunHandler(thing);
         } else if (thingTypeUID.equals(THING_TYPE_MOON)) {
             thingHandler = new MoonHandler(thing, scheduler);
         }
